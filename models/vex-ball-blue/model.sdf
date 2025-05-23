@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.7">
-  <model name="vex-ball-red">
+  <model name="vex-ball-blue">
 
     <!-- model position in the world (in meters) [might want to make this a world.sdf property due to having many of them...]-->
     <pose>.5 0 2 0 0 0</pose>
@@ -14,7 +14,7 @@
       <visual name="visual">
         <geometry>
           <mesh>
-            <uri>model://vex-ball-red/meshes/vex-ball-red-cd.dae</uri>
+            <uri>model://vex-ball-red/meshes/vex-ball-blue-cd.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -22,7 +22,7 @@
       <collision name="collision">
         <geometry>
           <mesh>
-            <uri>model://vex-ball-red/meshes/vex-ball-red-cd.dae</uri>
+            <uri>model://vex-ball-red/meshes/vex-ball-blue-cd.dae</uri>
           </mesh>
         </geometry>
       </collision>
