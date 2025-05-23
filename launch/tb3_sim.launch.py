@@ -1,27 +1,27 @@
 
 import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.conditions import IfCondition, UnlessCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, LaunchConfiguration, PythonExpression
-from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription # type: ignore
+from launch.conditions import IfCondition, UnlessCondition # type: ignore
+from launch.launch_description_sources import PythonLaunchDescriptionSource # type: ignore
+from launch.substitutions import Command, LaunchConfiguration, PythonExpression # type: ignore
+from launch_ros.actions import Node # type: ignore
+from launch_ros.substitutions import FindPackageShare # type: ignore
  
 def generate_launch_description():
 
   # Set the path to the Gazebo ROS package
   ros_gz_sim = FindPackageShare(package='ros_gz_sim').find('ros_gz_sim')   
    
-  # Set the path to this package.
+  # Set the path to vex package
   pkg_share = FindPackageShare(package='vex_pushback').find('vex_pushback')
  
-  # Set the path to the world file
+  # world file path
   world_file_name = 'pushback_v2.sdf'
   world_path = os.path.join(pkg_share, 'worlds', world_file_name)
    
-  # Set the path to the SDF model files.
-  gazebo_models_path = os.path.join(pkg_share, 'models')
+  # Set the path to the SDF model files
+  gazebo_models_path = os.path.join(pkg_share, 'vex_pushback')
   os.environ["GAZEBO_MODEL_PATH"] = gazebo_models_path
  
   ########### YOU DO NOT NEED TO CHANGE ANYTHING BELOW THIS LINE ##############  
@@ -50,14 +50,14 @@ def generate_launch_description():
     name='world',
     default_value=world_path,
     description='Full path to the world model file to load')
-    
+  
   # Specify the actions
    
   # Start Gazebo server
-#   start_gazebo_server_cmd = IncludeLaunchDescription(
-#     PythonLaunchDescriptionSource(os.path.join(ros_gz_sim, 'launch', 'gzserver.launch.py')),
-#     condition=IfCondition(use_simulator),
-#     launch_arguments={'world': world}.items())
+  start_gazebo_server_cmd = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource(os.path.join(ros_gz_sim, 'launch', 'gzserver.launch.py')),
+    condition=IfCondition(use_simulator),
+    launch_arguments={'world': world}.items())
  
   # Start Gazebo client    
   start_gazebo_client_cmd = IncludeLaunchDescription(

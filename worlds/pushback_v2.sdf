@@ -72,82 +72,15 @@
       <self_collide>false</self_collide>
     </model>
 
-    <model name='playing-field'>
-      <link name='link'>
+  <!--VEX FIELD-->
+    <include>
+      <uri>model://vex-field</uri>
+    </include>
 
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <uri>model://vex-field-simplified.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-
-        <collision name='collision'>
-          <geometry>
-            <mesh>
-              <uri>model://VEX-collision.dae</uri>
-            </mesh>
-          </geometry>
-        </collision>
-
-        <pose>0 0 0 0 0 0</pose>
-
-        <inertial>
-          <pose>0 0 0 0 0 0</pose>
-          <mass>1</mass>
-          <inertia>
-            <ixx>1</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>1</iyy>
-            <iyz>0</iyz>
-            <izz>1</izz>
-          </inertia>
-        </inertial>
-        <enable_wind>false</enable_wind>
-      </link>
-      <pose>0 0 0 0 0 0</pose>
-      <static>true</static>
-      <self_collide>false</self_collide>
-    </model>
-
-    <model name = "ball_r_1">
-    <link name='link'>
-      <visual name='visual'>
-        <geometry>
-          <mesh>
-            <uri>model://vex-ball-red-cd.dae</uri>
-          </mesh>
-        </geometry>
-      </visual>
-
-      <collision name='collision'>
-        <geometry>
-          <mesh>
-            <uri>model://vex-ball-red-cd.dae</uri>
-          </mesh>
-        </geometry>
-      </collision>
-
-      <inertial>
-          <pose>0 0 0 0 0 0</pose>
-          <mass>0.04</mass>
-          <inertia>
-            <ixx>1</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>1</iyy>
-            <iyz>0</iyz>
-            <izz>1</izz>
-          </inertia>
-     </inertial>
-
-    </link>
-      <static>false</static>
-      <self_collide>false</self_collide>
-      <pose>0 0 2 0 0 0</pose>
-    </model>
+  <!--RED BALL-->
+   <include>
+    <uri>model://vex-ball-red</uri>
+   </include>
 
     <light name='sun' type='directional'>
       <pose>0 0 10 0 0 0</pose>

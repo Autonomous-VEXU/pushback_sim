@@ -12,18 +12,8 @@ find_package(ament_cmake REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 install(
-    DIRECTORY launch
-    DESTINATION share/vex_pushback
-)
-
-install(
-    DIRECTORY worlds
-    DESTINATION share/vex_pushback
-)
-
-install(
-    DIRECTORY models
-    DESTINATION share/vex_pushback
+    DIRECTORY launch worlds models
+    DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
