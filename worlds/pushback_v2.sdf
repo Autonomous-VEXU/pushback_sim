@@ -72,22 +72,23 @@
       <self_collide>false</self_collide>
     </model>
 
+  <!--VEX FIELD-->
     <model name='playing-field'>
       <link name='link'>
 
         <visual name='visual'>
           <geometry>
-            <mesh>
-              <uri>model://vex-field-simplified.dae</uri>
-            </mesh>
+            <include>
+              model://vex-field
+            </include>
           </geometry>
         </visual>
 
         <collision name='collision'>
           <geometry>
-            <mesh>
-              <uri>model://VEX-collision.dae</uri>
-            </mesh>
+            <include>
+              model://vex-field
+          </include>
           </geometry>
         </collision>
 
@@ -112,21 +113,22 @@
       <self_collide>false</self_collide>
     </model>
 
+  <!--RED BALL-->
     <model name = "ball_r_1">
     <link name='link'>
       <visual name='visual'>
         <geometry>
-          <mesh>
-            <uri>model://vex-ball-red-cd.dae</uri>
-          </mesh>
+          <include>
+            model://vex-ball-red
+          </include>
         </geometry>
       </visual>
 
       <collision name='collision'>
         <geometry>
-          <mesh>
-            <uri>model://vex-ball-red-cd.dae</uri>
-          </mesh>
+          <include>
+            model://vex-ball-red
+          </include>
         </geometry>
       </collision>
 
