@@ -1,0 +1,10 @@
+Notes & Troubleshooting Tips:
+
+// dont forget to build before re-trying launch file
+    CLI commands:
+        colcon build --packages-select vex_pushback --symlink-install
+        source install/setup.bashrc
+        ros2 launch vex_pushback <file_name>.launch.py
+
+// how to correctly reference sdf & models in world file
+https://gazebosim.org/api/sim/8/migrationsdf.html 
