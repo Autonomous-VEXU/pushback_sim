@@ -1,22 +1,27 @@
 <?xml version="1.0" ?>
 <sdf version="1.7">
   <model name="vex-field">
+
+    <!-- model position in the world -->
+    <pose>0 0 0 0 0 0</pose>
+
+    <!-- locked postiton? -->
     <static>true</static>
+
     <link name="link">
-    
+      <!--pose of link relative to model-->
+      <pose>0 0 0 0 0 0</pose>
+
+      <!-- visual model-->
       <visual name="visual">
         <geometry>
           <mesh>
             <uri>model://vex-field/meshes/vex-field-simplified.dae</uri>
           </mesh>
         </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.5 0.5 0.5 1</specular>
-        </material>
       </visual>
 
+      <!-- collision geometry-->
       <collision name="collision">
         <geometry>
           <mesh>
