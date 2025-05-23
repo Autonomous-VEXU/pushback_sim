@@ -2,9 +2,6 @@
 <sdf version="1.7">
   <model name="vex-ball-blue">
 
-    <!-- model position in the world (in meters) [might want to make this a world.sdf property due to having many of them...]-->
-    <pose>.5 0 2 0 0 0</pose>
-
     <static>false</static>
     <link name="link">
 
@@ -28,7 +25,7 @@
       </collision>
 
       <inertial>
-        <mass>0.1</mass>
+        <mass>0.04</mass> <!--units are in kg. 1g = 0.001kg-->
         <inertia>
           <ixx>0.0002</ixx>
           <iyy>0.0002</iyy>
