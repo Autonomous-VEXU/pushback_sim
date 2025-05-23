@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <sdf version="1.7">
   <model name="vex-ball-red">
-  
-    <!-- model position in the world -->
-    <pose>0 0 1 0 0 0</pose>
+
+    <!-- model position in the world (in meters)-->
+    <pose>.5 0 2 0 0 0</pose>
 
     <static>false</static>
     <link name="link">
