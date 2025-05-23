@@ -23,7 +23,12 @@ def generate_launch_description():
 
     # arguments for gz sim
     arguments = LaunchDescription([
-            DeclareLaunchArgument('world', default_value='pushback_v2', description='sim world'),
+        # set world for gazebo
+        DeclareLaunchArgument('world', default_value='pushback_v2', description='sim world'),
+        # set x position of turtlebot3
+        DeclareLaunchArgument('x_pose', default_value='.5', description='turtlebot X coord'),
+        # set y position of turtlebot3
+        DeclareLaunchArgument('y_pose', default_value='1', description='turtlebot Y coord'),
     ])
 
     # actually run gazebo
@@ -38,8 +43,11 @@ def generate_launch_description():
     #spawn in turtlebot 3
     turtlebot = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('turtlebot3_gazebo')
-        )])
+            get_package_share_directory('turtlebot3_gazebo'), 'launch'), '/spawn_turtlebot3.launch.py']),
+        launch_arguments = [
+            ('x_pose',LaunchConfiguration('x_pose')),
+            ('y_pose', LaunchConfiguration('y_pose'))
+        ]
     )
 
     # launch each item defined above by returning the variable
@@ -47,4 +55,5 @@ def generate_launch_description():
         gz_sim_resource,
         arguments,
         gazebo,
+        turtlebot,
     ])
