@@ -1,0 +1,10 @@
+<launch>
+  <!-- Launch Gazebo with a custom world -->
+  <include file="/home/kymadogg/ros2_ws/install/ros_gz_sim/share/ros_gz_sim/launch/gz_sim.launch">
+    <arg name="gz_args" value="-r ~/ros2_ws/src/vex_pushback/worlds/pushback_v2.sdf"/>
+  </include>
+
+  <!-- Spawn TurtleBot3 model -->
+  <node pkg="ros_gz_sim" exec="create" output="screen"
+        args="-name turtlebot3 -x 0 -y 0 -z 0.1 -file /home/kymadogg/ros2_ws/install/turtlebot3_gazebo/share/turtlebot3_gazebo/models/turtlebot3_burger/model.sdf"/>
+</launch>
