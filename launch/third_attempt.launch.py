@@ -1,13 +1,10 @@
 import os
-from pathlib import Path
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
-from launch.conditions import IfCondition, UnlessCondition 
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, LaunchConfiguration, PythonExpression 
-from launch_ros.substitutions import FindPackageShare 
+from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     # arguments
@@ -15,14 +12,14 @@ def generate_launch_description():
 
     #file paths
     vex_path = os.path.join(get_package_share_directory('vex_pushback'))
+    models_path = os.path.join(vex_path, 'models')
+    worlds_path = os.path.join(vex_path, 'worlds')
+
 
     # set gz sim resource path
     gz_sim_resource = SetEnvironmentVariable(
         name = 'GZ_SIM_RESOURCE_PATH',
-        value = [
-            os.path.join(vex_path, 'worlds'), ':' +
-            str(Path(vex_path).parent.resolve())
-        ]
+        value=f"{models_path}:{worlds_path}:{vex_path}"
     )
 
     # arguments for gz sim... i guess
@@ -42,5 +39,5 @@ def generate_launch_description():
     return LaunchDescription([
         gz_sim_resource,
         arguments,
-        gazebo
+        gazebo,
     ])

@@ -8,3 +8,6 @@ Notes & Troubleshooting Tips:
 
 // how to correctly reference sdf & models in world file
 https://gazebosim.org/api/sim/8/migrationsdf.html 
+
+// referencing multiple resource paths
+    export GZ_SIM_RESOURCE_PATH=/home/username/models:/home/username/another_project/models
