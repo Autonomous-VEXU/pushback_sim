@@ -5,6 +5,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 
 def generate_launch_description():
 
@@ -29,6 +30,8 @@ def generate_launch_description():
         DeclareLaunchArgument('x_pose', default_value='.5', description='turtlebot X coord'),
         # set y position of turtlebot3
         DeclareLaunchArgument('y_pose', default_value='1', description='turtlebot Y coord'),
+        # set z position of turtlebot3
+        DeclareLaunchArgument('z_pose', default_value='1', description='turtlebot Z coord'),
     ])
 
     # actually run gazebo
@@ -46,7 +49,8 @@ def generate_launch_description():
             get_package_share_directory('turtlebot3_gazebo'), 'launch'), '/spawn_turtlebot3.launch.py']),
         launch_arguments = [
             ('x_pose',LaunchConfiguration('x_pose')),
-            ('y_pose', LaunchConfiguration('y_pose'))
+            ('y_pose', LaunchConfiguration('y_pose')),
+            ('z_pose', LaunchConfiguration('z_pose'))
         ]
     )
 
