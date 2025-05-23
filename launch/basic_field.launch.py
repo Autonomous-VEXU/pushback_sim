@@ -7,8 +7,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
-    # arguments
-    use_sim_time = LaunchConfiguration('use_sim_time', default=True)
 
     #file paths
     vex_path = os.path.join(get_package_share_directory('vex_pushback'))
