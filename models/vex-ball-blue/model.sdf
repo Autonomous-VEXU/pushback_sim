@@ -2,7 +2,9 @@
 <sdf version="1.7">
   <model name="vex-ball-blue">
 
+    <!--general object params -->
     <static>false</static>
+
     <link name="link">
 
       <!--pose of link relative to model-->

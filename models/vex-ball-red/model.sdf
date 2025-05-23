@@ -2,10 +2,9 @@
 <sdf version="1.7">
   <model name="vex-ball-red">
 
-    <!-- model position in the world (in meters) [might want to make this a world.sdf property due to having many of them...]-->
-    
-
+    <!--general object params -->
     <static>false</static>
+
     <link name="link">
 
       <!--pose of link relative to model-->

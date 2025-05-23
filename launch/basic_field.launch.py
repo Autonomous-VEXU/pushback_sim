@@ -8,11 +8,12 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
 
-    #file paths
+    # base file path for the package
     vex_path = os.path.join(get_package_share_directory('vex_pushback'))
+
+    # secondary file paths for locating resources
     models_path = os.path.join(vex_path, 'models')
     worlds_path = os.path.join(vex_path, 'worlds')
-
 
     # set gz sim resource path
     gz_sim_resource = SetEnvironmentVariable(
@@ -20,7 +21,7 @@ def generate_launch_description():
         value=f"{models_path}:{worlds_path}:{vex_path}"
     )
 
-    # arguments for gz sim... i guess
+    # arguments for gz sim
     arguments = LaunchDescription([
             DeclareLaunchArgument('world', default_value='pushback_v2', description='sim world'),
     ])
@@ -33,7 +34,7 @@ def generate_launch_description():
             ('gz_args', [LaunchConfiguration('world'),'.sdf',' -v 4',' -r'])
         ]
     )
-
+    # launch each item defined above by returning the variable
     return LaunchDescription([
         gz_sim_resource,
         arguments,
