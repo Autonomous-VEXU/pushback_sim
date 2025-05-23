@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.7">
-  <model name="vex-ball-red">
+  <model name="vex-ball-blue">
 
     <!--general object params -->
     <static>false</static>
@@ -13,7 +13,7 @@
       <visual name="visual">
         <geometry>
           <mesh>
-            <uri>model://vex-ball-red/meshes/vex-ball-red-cd.dae</uri>
+            <uri>model://vex-ball-red/meshes/vex-ball-blue-cd.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -21,7 +21,7 @@
       <collision name="collision">
         <geometry>
           <mesh>
-            <uri>model://vex-ball-red/meshes/vex-ball-red-cd.dae</uri>
+            <uri>model://vex-ball-red/meshes/vex-ball-blue-cd.dae</uri>
           </mesh>
         </geometry>
       </collision>

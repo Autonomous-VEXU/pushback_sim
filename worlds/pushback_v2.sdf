@@ -80,6 +80,7 @@
   <!--RED BALL-->
    <include>
     <uri>model://vex-ball-red</uri>
+    <pose>.5 0 2 0 0 0</pose>
    </include>
 
     <light name='sun' type='directional'>
