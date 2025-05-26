@@ -281,13 +281,35 @@
     <pose>-1.20 -0.14 0.04 0 0 0</pose>
    </include>
 
-
    <!-- center of the field (each color #17-22)-->
 
    <!-- along the walls (each color #23-26)-->
+   <include>
+    <name>R23</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>1.72 1.21 0.04 0 0 0</pose>
+   </include>
 
+   <include>
+    <name>R24</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>1.72 1.11 0.04 0 0 0</pose>
+   </include>
+
+    <include>
+    <name>R25</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>-1.72 1.21 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>R26</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>-1.72 1.11 0.04 0 0 0</pose>
+   </include>
+
+   
    <!-- in the opposing parking zone (each color #27-30)-->
-
 
     <light name='sun' type='directional'>
       <pose>0 0 10 0 0 0</pose>
