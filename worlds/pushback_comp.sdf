@@ -318,6 +318,43 @@
     <pose>0.49 -0.58 0.04 0 0 0</pose>
    </include>
 
+   <include>
+    <name>B17</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>0.58 0.58 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>B18</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>0.58 0.49 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>B19</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>0.49 0.58 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>B20</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>-0.58 0.58 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>B21</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>-0.58 0.49 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>B22</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>-0.49 0.58 0.04 0 0 0</pose>
+   </include>
+
+
    <!-- along the walls (each color #23-26)-->
    <include>
     <name>R23</name>
@@ -368,6 +405,53 @@
    </include>
    
    <!-- in the opposing parking zone (each color #27-30)-->
+   <include>
+    <name>R27</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>-0.15 1.44 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>R28</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>-0.05 1.44 0.04 0 0 0</pose>
+   </include>
+
+    <include>
+    <name>R29</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>0.05 1.44 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>R30</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>0.15 1.44 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>B27</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>-0.15 -1.44 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>B28</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>-0.05 -1.44 0.04 0 0 0</pose>
+   </include>
+
+    <include>
+    <name>B29</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>0.05 -1.44 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>B30</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>0.15 -1.44 0.04 0 0 0</pose>
+   </include>
 
     <light name='sun' type='directional'>
       <pose>0 0 10 0 0 0</pose>
