@@ -31,7 +31,7 @@ def generate_launch_description():
         # set y position of turtlebot3
         DeclareLaunchArgument('y_pose', default_value='1', description='turtlebot Y coord'),
         # set z position of turtlebot3
-        DeclareLaunchArgument('z_pose', default_value='1', description='turtlebot Z coord'),
+        DeclareLaunchArgument('z_pose', default_value='.04', description='turtlebot Z coord'),
     ])
 
     # actually run gazebo
