@@ -13,7 +13,7 @@
       <visual name="visual">
         <geometry>
           <mesh>
-            <uri>model://vex-ball-red/meshes/vex-ball-blue-cd.dae</uri>
+            <uri>model://vex-ball-blue/meshes/vex-ball-blue-cd.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -21,7 +21,7 @@
       <collision name="collision">
         <geometry>
           <mesh>
-            <uri>model://vex-ball-red/meshes/vex-ball-blue-cd.dae</uri>
+            <uri>model://vex-ball-blue/meshes/vex-ball-blue-cd.dae</uri>
           </mesh>
         </geometry>
       </collision>
