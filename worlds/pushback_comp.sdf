@@ -233,12 +233,60 @@
    </include>
 
    <!-- under the long goals (each color #13-16)-->
+   <include>
+    <name>B13</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>1.20 0.05 0.04 0 0 0</pose>
+   </include>
 
-   <!-- center of the field (each color #)-->
+   <include>
+    <name>B14</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>1.20 0.14 0.04 0 0 0</pose>
+   </include>
 
-   <!-- along the walls -->
+   <include>
+    <name>B15</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>-1.20 0.05 0.04 0 0 0</pose>
+   </include>
 
-   <!-- in the opposing parking zone -->
+   <include>
+    <name>B16</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>-1.20 0.14 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>R13</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>1.20 -0.05 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>R14</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>1.20 -0.14 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>R15</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>-1.20 -0.05 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>R16</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>-1.20 -0.14 0.04 0 0 0</pose>
+   </include>
+
+
+   <!-- center of the field (each color #17-22)-->
+
+   <!-- along the walls (each color #23-26)-->
+
+   <!-- in the opposing parking zone (each color #27-30)-->
 
 
     <light name='sun' type='directional'>
