@@ -231,9 +231,10 @@
     <uri>model://vex-ball-blue</uri>
     <pose>1.19 -1.72 0.55 0 0 0</pose>
    </include>
+
    <!-- under the long goals (each color #13-16)-->
 
-   <!-- center of the field -->
+   <!-- center of the field (each color #)-->
 
    <!-- along the walls -->
 
