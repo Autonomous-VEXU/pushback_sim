@@ -21,7 +21,7 @@
       <collision name="collision">
         <geometry>
           <mesh>
-            <uri>model://vex-ball-red/meshes/vex-ball-red-cd.dae</uri>
+            <uri>model://vex-ball-red/meshes/vex-pb-low-poly-r.dae</uri>
           </mesh>
         </geometry>
       </collision>
