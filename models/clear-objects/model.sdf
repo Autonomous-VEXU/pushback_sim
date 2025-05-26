@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <sdf version="1.7">
-  <model name="vex-field">
+  <model name="clear-objects">
 
     <!-- model position in the world -->
-    <pose>0 0 0.3 0 0 0</pose>
+    <pose>0 0 0.01 0 0 0</pose>
 
     <!-- locked postiton? -->
     <static>true</static>
@@ -16,16 +16,22 @@
       <visual name="visual">
         <geometry>
           <mesh>
-            <uri>model://vex-field/meshes/vex-field-visual-nf-lite.dae</uri>
+            <uri>model://clear-objects/meshes/vex-clear-obj.dae</uri>
           </mesh>
         </geometry>
+        <!-- Very pale grey, mostly transparent -->
+         <material>
+          <ambient>0.95 0.95 0.95 0.15</ambient>   
+          <diffuse>0.95 0.95 0.95 0.15</diffuse>
+          <specular>0.8 0.8 0.8 0.3</specular>
+        </material>
       </visual>
 
       <!-- collision geometry-->
       <collision name="collision">
         <geometry>
           <mesh>
-            <uri>model://vex-field/meshes/vex-field-collision-nf.dae</uri>
+            <uri>model://clear-objects/meshes/vex-clear-obj.dae</uri>
           </mesh>
         </geometry>
       </collision>
