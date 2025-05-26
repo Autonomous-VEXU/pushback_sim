@@ -282,6 +282,41 @@
    </include>
 
    <!-- center of the field (each color #17-22)-->
+   <include>
+    <name>R17</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>-0.58 -0.58 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>R18</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>-0.58 -0.49 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>R19</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>-0.49 -0.58 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>R20</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>0.58 -0.58 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>R21</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>0.58 -0.49 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>R22</name>
+    <uri>model://vex-ball-red</uri>
+    <pose>0.49 -0.58 0.04 0 0 0</pose>
+   </include>
 
    <!-- along the walls (each color #23-26)-->
    <include>
@@ -308,6 +343,29 @@
     <pose>-1.72 1.11 0.04 0 0 0</pose>
    </include>
 
+     <include>
+    <name>B23</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>1.72 -1.21 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>B24</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>1.72 -1.11 0.04 0 0 0</pose>
+   </include>
+
+    <include>
+    <name>B25</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>-1.72 -1.21 0.04 0 0 0</pose>
+   </include>
+
+   <include>
+    <name>B26</name>
+    <uri>model://vex-ball-blue</uri>
+    <pose>-1.72 -1.11 0.04 0 0 0</pose>
+   </include>
    
    <!-- in the opposing parking zone (each color #27-30)-->
 
