@@ -3,7 +3,7 @@
   <model name="vex-field">
 
     <!-- model position in the world -->
-    <pose>0 0 0 0 0 0</pose>
+    <pose>0 0 0.3 0 0 0</pose>
 
     <!-- locked postiton? -->
     <static>true</static>
@@ -16,7 +16,7 @@
       <visual name="visual">
         <geometry>
           <mesh>
-            <uri>model://vex-field/meshes/vex-field-simplified.dae</uri>
+            <uri>model://vex-field/meshes/vex-field-visual-nf-lite.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -25,7 +25,7 @@
       <collision name="collision">
         <geometry>
           <mesh>
-            <uri>model://vex-field/meshes/VEX-collision.dae</uri>
+            <uri>model://vex-field/meshes/vex-field-collision-nf.dae</uri>
           </mesh>
         </geometry>
       </collision>

@@ -23,7 +23,7 @@ def generate_launch_description():
 
     # arguments for gz sim
     arguments = LaunchDescription([
-            DeclareLaunchArgument('world', default_value='pushback_v2', description='sim world'),
+            DeclareLaunchArgument('world', default_value='pushback_comp', description='sim world'),
     ])
 
     # actually run gazebo

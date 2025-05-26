@@ -77,6 +77,11 @@
       <uri>model://vex-field</uri>
     </include>
 
+  <!--TRANSLUCENT FIELD OBJECTS-->
+    <include>
+      <uri>model://clear-objects</uri>
+    </include>
+
   <!--RED BALL-->
    <include>
     <uri>model://vex-ball-red</uri>
