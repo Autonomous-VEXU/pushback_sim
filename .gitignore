@@ -58,3 +58,4 @@ CATKIN_IGNORE
 
 #vs code crap
 /.vscode
+/log
