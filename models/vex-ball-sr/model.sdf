@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
-  <model name="vex-ball-csr">
+  <model name="vex-ball-sr">
 
     <!--general object params -->
     <static>false</static>
@@ -12,9 +12,9 @@
     
         <visual name="visual">
             <geometry>
-                <mesh>
-                    <uri>model://vex-ball-csr/meshes/vex-pb-low-poly-r.dae</uri>
-                </mesh>
+                <sphere>
+                    <radius>0.041</radius> <!--should be in cm-->
+                </sphere>
             </geometry>
         </visual>
 

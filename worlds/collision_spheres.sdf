@@ -6,15 +6,15 @@
     name="gz::sim::systems::Physics">
   </plugin>
 
-  <!-- <plugin
+  <plugin
     filename="gz-sim-user-commands-system"
     name="gz::sim::systems::UserCommands">
-  </plugin> -->
+  </plugin>
 
-  <!-- <plugin
+  <plugin
     filename="gz-sim-scene-broadcaster-system"
     name="gz::sim::systems::SceneBroadcaster">
-  </plugin> -->
+  </plugin>
 
   <!-- <plugin
     filename="gz-sim-sensors-system"

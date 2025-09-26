@@ -23,7 +23,7 @@ def generate_launch_description():
 
     # arguments for gz sim
     arguments = LaunchDescription([
-            DeclareLaunchArgument('world', default_value='spheres', description='world selection'),
+            DeclareLaunchArgument('world', default_value='collision_spheres', description='world selection'),
     ])
 
     # actually run gazebo

@@ -13,7 +13,7 @@
         <visual name="visual">
             <geometry>
                 <mesh>
-                    <uri>model://vex-ball-sb/meshes/vex-pb-low-poly-b.dae</uri>
+                    <uri>model://vex-ball-csb/meshes/vex-pb-low-poly-b.dae</uri>
                 </mesh>
             </geometry>
         </visual>
@@ -21,7 +21,7 @@
         <collision name="collision">
             <geometry>
                 <sphere>
-                    <radius>0.41</radius> <!--should be in cm-->
+                    <radius>0.041</radius> <!--should be in cm-->
                 </sphere>
             </geometry>
         </collision>

@@ -70,8 +70,7 @@
 
     <!-- different types of blocks-->
     <include name="vs sphere">
-        <uri>model://vex-ball-sb</uri>
-    
+        <uri>model://vex-ball-csb</uri>
     </include>
 
   </world>
