@@ -7,13 +7,23 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
-
     # base file path for the package
     vex_path = os.path.join(get_package_share_directory('pushback_sim'))
 
     # secondary file paths for locating resources
     models_path = os.path.join(vex_path, 'models')
     worlds_path = os.path.join(vex_path, 'worlds')
+
+    def get_available_worlds():
+        try:
+            world_list = [f[:-4] for f in os.listdir(worlds_path) if f.endswith('.sdf')]
+            if not world_list:
+                return "directory empty"
+            return "Gz Sim Worlds: " + ", ".join(world_list)
+        except Exception as e:
+            return f"ERROR: {e}"
+        
+    worlds = get_available_worlds()
 
     # set gz sim resource path
     gz_sim_resource = SetEnvironmentVariable(
@@ -23,7 +33,7 @@ def generate_launch_description():
 
     # arguments for gz sim
     arguments = LaunchDescription([
-            DeclareLaunchArgument('world', default_value='collision_spheres', description='world selection'),
+        DeclareLaunchArgument('world', default_value='empty', description=worlds),
     ])
 
     # actually run gazebo

@@ -14,4 +14,6 @@ https://gazebosim.org/api/sim/8/migrationsdf.html
 
 // Simulation Description Format (SDF) Reference link: 
     http://sdformat.org
-    
+
+// Colors for Gazebo materials (weird RGBA format)
+    https://classic.gazebosim.org/tutorials?tut=color_model 
