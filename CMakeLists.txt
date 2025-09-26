@@ -12,8 +12,8 @@ find_package(ament_cmake REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 install(
-    DIRECTORY launch worlds models
-    DESTINATION share/${PROJECT_NAME}
+  DIRECTORY launch worlds models
+  DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)

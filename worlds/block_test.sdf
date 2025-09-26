@@ -1,27 +1,32 @@
 <?xml version="1.0"?>
 <sdf version="1.6">
-  <world name="default">
+  <world name="block_test">
   <plugin
     filename="gz-sim-physics-system"
     name="gz::sim::systems::Physics">
   </plugin>
+
   <plugin
     filename="gz-sim-user-commands-system"
     name="gz::sim::systems::UserCommands">
   </plugin>
+
   <plugin
     filename="gz-sim-scene-broadcaster-system"
     name="gz::sim::systems::SceneBroadcaster">
-  </plugin>
+  </plugin> 
+
   <!-- <plugin
     filename="gz-sim-sensors-system"
     name="gz::sim::systems::Sensors">
     <render_engine>ogre2</render_engine>
-  </plugin>
-  <plugin
+  </plugin> -->
+
+  <!-- <plugin
     filename="gz-sim-imu-system"
     name="gz::sim::systems::Imu">
   </plugin> -->
+
     <include>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Ground Plane</uri>
     </include>
@@ -62,6 +67,22 @@
         </constraints>
       </ode>
     </physics>
+
+    <!-- different types of blocks-->
+    <include name="vc-sphere">
+        <uri>model://vex-ball-csb</uri>
+        <pose>1 1 0.5 0 0 0</pose>
+    </include>
+
+    <include name="no-primatives">
+        <uri>model://vex-ball-blue</uri>
+        <pose>1 -1 0.5 0 0 0</pose>
+    </include>
+
+    <include name="sphere">
+        <uri>model://red-sphere</uri>
+        <pose>-1 1 0.5 0 0 0</pose>
+    </include>
 
   </world>
 </sdf>

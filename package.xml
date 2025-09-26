@@ -5,10 +5,8 @@
   <version>0.0.0</version>
   <description>Simulation stuff for vex push back</description>
   <maintainer email="kmhswimgirl@gmail.com">kylie herbstzuber</maintainer>
-  <license>Apache-2.0</license>
-
   <buildtool_depend>ament_cmake</buildtool_depend>
-
+  <license>Apache-2.0</license>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
