@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
-<sdf version="1.7">
-  <model name="vex-ball-csb">
+<sdf version="1.6">
+  <model name="blue-sphere">
 
     <!--general object params -->
     <static>false</static>
@@ -12,10 +12,16 @@
     
       <visual name="visual">
           <geometry>
-              <mesh>
-                  <uri>model://vex-ball-csb/meshes/vex-pb-low-poly-b.dae</uri>
-              </mesh>
+              <sphere>
+                  <radius>0.041</radius> <!--should be in cm-->
+              </sphere>
           </geometry>
+          <material>
+              <ambient>0.0 0.0 0.8 1.0</ambient>
+              <diffuse>0.0 0.0 0.8 1.0</diffuse>
+              <specular>0.1 0.1 0.1 1.0</specular>
+              <emissive>0 0 0 1</emissive>
+          </material>
       </visual>
 
       <collision name="collision">
@@ -28,13 +34,15 @@
 
       <inertial>
         <mass>0.04</mass> <!--units are in kg. 1g = 0.001kg-->
-          <inertia>
-            <ixx>0.0002</ixx>
-            <iyy>0.0002</iyy>
-            <izz>0.0002</izz>
-          </inertia>
+        <inertia>
+          <ixx>0.0002</ixx>
+          <iyy>0.0002</iyy>
+          <izz>0.0002</izz>
+        </inertia>
       </inertial>
 
     </link>
   </model>
 </sdf>
+
+
