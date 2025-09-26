@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.7">
-  <model name="vex-ball-sr">
+  <model name="vex-ball-csb">
 
     <!--general object params -->
     <static>false</static>
@@ -13,7 +13,7 @@
         <visual name="visual">
             <geometry>
                 <mesh>
-                    <uri>model://vex-ball-sr/meshes/vex-pb-low-poly-r.dae</uri>
+                    <uri>model://vex-ball-sb/meshes/vex-pb-low-poly-b.dae</uri>
                 </mesh>
             </geometry>
         </visual>
