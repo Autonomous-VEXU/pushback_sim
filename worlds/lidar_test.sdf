@@ -68,5 +68,10 @@
       </ode>
     </physics>
 
+    <!--Test LiDAR/ Localization field-->
+    <include>
+      <uri>model://lidar-test-field</uri>
+    </include>
+
   </world>
 </sdf>
