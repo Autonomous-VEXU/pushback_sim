@@ -3,7 +3,7 @@
   <model name="lidar-test-field">
 
     <!-- model position in the world -->
-    <pose>0 0 0.1 0 0 0</pose>
+    <pose>0 0 0.01 0 0 0</pose>
 
     <!-- locked postiton? -->
     <static>true</static>
@@ -40,7 +40,7 @@
       </inertial>
 
     </link>
-    <link name="inside-walls">
+    <link name="outside-walls">
     <!--pose of link relative to model-->
       <pose>0 0 0 0 0 0</pose>
 
