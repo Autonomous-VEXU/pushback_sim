@@ -14,7 +14,7 @@ In order to launch a world, the workspace must first be built and sourced. Make 
 Here is a general command to launch a specific world: </br>
 `ros2 launch pushback_sim world_select.launch.py world:=<world>`
 
-> Note: The `</world>` tag is where you put the name of the world that you want to launch. file minus the file extension
+> Note: The `</world>` tag is where you put the name of the world that you want to launch.
 
 ## World Guide + Descriptions
 `block_test`: 3 blocks with various visual and collision geometries</br>
