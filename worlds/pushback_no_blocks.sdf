@@ -67,41 +67,21 @@
       </ode>
     </physics>
 
-  <!--VEX FIELD-->
+    <!--VEX FIELD-->
     <include>
       <uri>model://vex-field</uri>
     </include>
 
-  <!--TRANSLUCENT FIELD OBJECTS-->
+    <!--TRANSLUCENT FIELD OBJECTS-->
     <include>
       <uri>model://clear-objects</uri>
     </include>
 
-  <!--RED BALL-->
-   <include>
-    <uri>model://vex-ball-red</uri>
-    <pose>.5 0 2 0 0 0</pose>
-   </include>
-
-    <light name='sun' type='directional'>
-      <pose>0 0 10 0 0 0</pose>
-      <cast_shadows>true</cast_shadows>
-      <intensity>1</intensity>
-      <direction>-0.5 0.10000000000000001 -0.90000000000000002</direction>
-      <diffuse>0.800000012 0.800000012 0.800000012 1</diffuse>
-      <specular>0.200000003 0.200000003 0.200000003 1</specular>
-      <attenuation>
-        <range>1000</range>
-        <linear>0.01</linear>
-        <constant>0.90000000000000002</constant>
-        <quadratic>0.001</quadratic>
-      </attenuation>
-      <spot>
-        <inner_angle>0</inner_angle>
-        <outer_angle>0</outer_angle>
-        <falloff>0</falloff>
-      </spot>
-    </light>
+    <!--RED BALL-->
+    <include>
+      <uri>model://vex-ball-red</uri>
+      <pose>.5 0 2 0 0 0</pose>
+    </include>
 
   </world>
 </sdf>
