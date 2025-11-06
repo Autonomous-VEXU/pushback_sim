@@ -20,10 +20,10 @@ Here is a general command to launch a specific world: </br>
 `block_test`: 3 blocks with various visual and collision geometries</br>
 `collision_spheres`: VEX Field with octocube visual meshes + sphere collision meshes</br>
 `empty`: Just as it sounds, a completely empty world </br>
-`lidar_test`: Asymmetric field used for testing simulated LiDAR sensors</br>
+`sensor_test`: Asymmetric field used for testing sensors setups in sim</br>
 `pushback_spheres`: VEX Push Back full field with sphere primatives for blocks</br>
 `pushback_no_blocks`: VEX Push Back field with no blocks</br>
-`pushback`: VEX Push Back field set up to competition standards</br>
+`pushback`: VEX Push Back field set up to usual standards</br>
 
 ## Main File Structure:
 ```
@@ -46,7 +46,7 @@ pushback_sim/
 │   ├── block_test.sdf
 │   ├── collision_spheres.sdf
 │   ├── empty.sdf
-│   ├── lidar_test.sdf
+│   ├── sensor_test.sdf
 │   ├── pushback_comp.sdf
 │   ├── pushback_v2.sdf
 │   └── using_full_spheres.sdf

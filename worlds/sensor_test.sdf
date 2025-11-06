@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <sdf version="1.6">
-  <world name="default">
+  <world name="sensor_test">
     <plugin
       filename="gz-sim-physics-system"
       name="gz::sim::systems::Physics">
