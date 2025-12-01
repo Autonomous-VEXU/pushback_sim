@@ -50,7 +50,7 @@
 
     <physics type="ode">
       <real_time_update_rate>1000.0</real_time_update_rate>
-      <max_step_size>0.001</max_step_size>
+      <max_step_size>0.01</max_step_size> <!--this used to be 0.001-->
       <real_time_factor>1</real_time_factor>
       <ode>
         <solver>
