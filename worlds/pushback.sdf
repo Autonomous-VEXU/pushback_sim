@@ -49,9 +49,9 @@
     </gui>
 
     <physics type="ode">
-      <real_time_update_rate>1000.0</real_time_update_rate>
+      <real_time_update_rate>100.0</real_time_update_rate> <!--used to be 1000.0-->
       <max_step_size>0.01</max_step_size> <!--this used to be 0.001-->
-      <real_time_factor>1</real_time_factor>
+      <max_contacts>100</max_contacts> <!-- used to hopefully reduce lag -->
       <ode>
         <solver>
           <type>quick</type>
