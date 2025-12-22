@@ -1,5 +1,5 @@
 <sdf version='1.10'>
-  <world name='pushback_v2'>
+  <world name='pushback_no_blocks'>
    <plugin
       filename="gz-sim-physics-system"
       name="gz::sim::systems::Physics">
