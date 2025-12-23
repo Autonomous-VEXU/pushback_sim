@@ -1,12 +1,5 @@
 # pushback_sim
-Simulation world of the VEX Push Back field + a few test envionments using ROS2 Jazzy Jalisco & Gazebo Harmonic. This package only contains world files. See the repository `Autonomous-VEXU/vex_robot` for robot models + spawners.
-
-## Required Packages
-- ros_gz_sim
-- turtlebot3_gazebo
-- turtlebot3_description
-- turtlebot3
-- xacro
+Simulation worlds, maps, and CAD models of the VEX Push Back field + a few test envionments using ROS2 Jazzy Jalisco & Gazebo Harmonic. This package only contains world files. See the repository `Autonomous-VEXU/otto_gazebo` for robot simulation assets.
 
 ## Launching a World
 In order to launch a world, the workspace must first be built and sourced. Make sure you are in the correct directory before running the commands: `colcon build --symlink-install` and then `source install/setup.bash`.
@@ -32,6 +25,9 @@ pushback_sim/
 │   ├── basic_field.launch.py
 │   ├── tb3_field.launch.py
 │   └── world_select.launch.py
+├── maps/
+│   ├── vex_field_map.pgm
+│   └── vex_field_map.yaml
 ├── models/
 │   ├── blue-sphere
 │   ├── clear-objects
@@ -47,9 +43,9 @@ pushback_sim/
 │   ├── collision_spheres.sdf
 │   ├── empty.sdf
 │   ├── sensor_test.sdf
-│   ├── pushback_comp.sdf
-│   ├── pushback_v2.sdf
-│   └── using_full_spheres.sdf
+│   ├── pushback_no_blocks.sdf
+│   ├── pushback_spheres.sdf
+│   └── pushback.sdf
 ├── CMakeLists.txt
 ├── package.xml
 └── resources.txt
@@ -72,5 +68,5 @@ models/
 [Nav2 Documentation](https://docs.nav2.org)</br>
 [Gazebo Harmonic Documentation](https://gazebosim.org/docs/harmonic/getstarted)</br>
 [Open Robotics Discourse](https://discourse.openrobotics.org)</br>
-[Robotics Stack Exchange](https://robotics.stackexchange.com)
+[Robotics Stack Exchange](https://robotics.stackexchange.com)</br>
 [Simulation Description Format (SDF)](http://sdformat.org)

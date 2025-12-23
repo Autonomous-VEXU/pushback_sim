@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <sdf version="1.6">
-  <world name="collision_spheres">
+  <world name="pushback_spheres">
   <plugin
     filename="gz-sim-physics-system"
     name="gz::sim::systems::Physics">
