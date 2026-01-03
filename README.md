@@ -1,5 +1,5 @@
 # pushback_sim
-Simulation worlds, maps, and CAD models of the VEX Push Back field + a few test envionments using ROS2 Jazzy Jalisco & Gazebo Harmonic. This package only contains world files. See the repository `Autonomous-VEXU/otto_gazebo` for robot simulation assets.
+Simulation worlds, maps, CAD models, and game behavior nodes for the VEX Push Back field + a few test envionments. See the repository `Autonomous-VEXU/otto_gazebo` for robot simulation assets.
 
 ## Launching a World
 In order to launch a world, the workspace must first be built and sourced. Make sure you are in the correct directory before running the commands: `colcon build --symlink-install` and then `source install/setup.bash`.

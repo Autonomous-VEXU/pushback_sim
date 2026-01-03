@@ -36,10 +36,8 @@ class PoseBridge(Node):
     def update_locations(self):
         objects = BallArray()
         data = self.echo_gz_topic() # contains one header and the rest are poses/object positions
-        str_data = str(data)
-        self.get_logger().info(str_data)
 
-        non_object_names = ['link', 'otto']
+        non_object_names = ['link', 'Otto']
 
         for pose in data.get("pose", []):
             if pose.get("name") not in non_object_names:

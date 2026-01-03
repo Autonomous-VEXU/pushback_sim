@@ -1,0 +1,53 @@
+import os
+
+from ament_index_python import get_package_share_directory
+from launch import LaunchDescription
+from launch_ros.actions import Node
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+
+def generate_launch_description():
+    # file + directory paths
+    this_dir = get_package_share_directory('pushback_sim')
+    otto_gz = get_package_share_directory('otto_gazebo')
+    otto_br = get_package_share_directory('otto_bringup')
+
+   
+    # world launch file
+    world = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(this_dir, 'launch', 'world_select.launch.py')),
+        launch_arguments={'world': 'pushback_no_blocks'}.items()
+    )
+
+    # spawn robot
+    otto = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(otto_gz, 'launch', 'spawn_robot.launch.py')),
+        launch_arguments={'x_pose': '0.5','y_pose':'0.5'}.items()
+    )
+
+    # enable teleop control
+    teleop = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py'))
+    )
+
+    # pose bridge
+    object_poses = Node(
+        package='pushback_sim',
+        executable='pose_bridge.py',
+        output='screen'
+    )
+
+    # scoring
+    scoring = Node(
+        package='pushback_sim',
+        executable='scoring.py',
+        output='screen'
+    )
+
+    return LaunchDescription([
+        world, 
+        otto, 
+        teleop,
+        object_poses,
+        scoring
+    ])
