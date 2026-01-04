@@ -61,7 +61,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('turtlebot3_gazebo'), 'launch'), '/spawn_turtlebot3.launch.py']),
         launch_arguments = [
-            ('x_pose',LaunchConfiguration('x_pose')),
+            ('x_pose', LaunchConfiguration('x_pose')),
             ('y_pose', LaunchConfiguration('y_pose')),
             ('z_pose', LaunchConfiguration('z_pose'))
         ]

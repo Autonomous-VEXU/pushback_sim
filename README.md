@@ -14,9 +14,9 @@ Here is a general command to launch a specific world: </br>
 `collision_spheres`: VEX Field with octocube visual meshes + sphere collision meshes</br>
 `empty`: Just as it sounds, a completely empty world </br>
 `sensor_test`: Asymmetric field used for testing sensors setups in sim</br>
-`pushback_spheres`: VEX Push Back full field with sphere primatives for blocks</br>
+`pushback_spheres`: VEX Push Back full field with sphere primatives for blocks (recommended)</br>
 `pushback_no_blocks`: VEX Push Back field with no blocks</br>
-`pushback`: VEX Push Back field set up to usual standards</br>
+`pushback`: VEX Push Back field set up to usual standards (really performance heavy)</br>
 
 ## Main File Structure:
 ```
