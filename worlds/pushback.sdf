@@ -1,24 +1,28 @@
 
 <?xml version="1.0"?>
 <sdf version="1.6">
-  <world name="default">
+  <world name="pushback">
   <plugin
     filename="gz-sim-physics-system"
     name="gz::sim::systems::Physics">
   </plugin>
+  
   <plugin
     filename="gz-sim-user-commands-system"
     name="gz::sim::systems::UserCommands">
   </plugin>
+
   <plugin
     filename="gz-sim-scene-broadcaster-system"
     name="gz::sim::systems::SceneBroadcaster">
   </plugin>
+
   <plugin
     filename="gz-sim-sensors-system"
     name="gz::sim::systems::Sensors">
     <render_engine>ogre2</render_engine>
   </plugin>
+
   <plugin
     filename="gz-sim-imu-system"
     name="gz::sim::systems::Imu">
@@ -45,9 +49,9 @@
     </gui>
 
     <physics type="ode">
-      <real_time_update_rate>1000.0</real_time_update_rate>
-      <max_step_size>0.001</max_step_size>
-      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>100.0</real_time_update_rate> <!--used to be 1000.0-->
+      <max_step_size>0.01</max_step_size> <!--this used to be 0.001-->
+      <max_contacts>100</max_contacts> <!-- used to hopefully reduce lag -->
       <ode>
         <solver>
           <type>quick</type>
