@@ -14,9 +14,10 @@ Here is a general command to launch a specific world: </br>
 ## World Guide + Descriptions
 `block_test`: Empty world with one of each block model</br>
 `empty`: Just as it sounds, a completely empty world </br>
-`sensor_test`: Asymmetric field used for testing sensors setups</br>
-`empty_field`: An empty field with no blocks </br>
-`pushback`: VEX Push Back field with all blocks in place</br>
+`sensor_test`: Asymmetric field used for testing sensors setups in sim</br>
+`pushback_spheres`: VEX Push Back full field with sphere primatives for blocks (recommended)</br>
+`pushback_no_blocks`: VEX Push Back field with no blocks</br>
+`pushback`: VEX Push Back field set up to usual standards (really performance heavy)</br>
 
 ## Main File Structure:
 ```
