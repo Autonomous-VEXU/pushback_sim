@@ -25,6 +25,11 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+# install(
+#   DIRECTORY maps/
+#   DESTINATION share/${PROJECT_NAME}/maps
+# )
+
 install(PROGRAMS
   src/scoring.py
   src/pose_bridge.py
