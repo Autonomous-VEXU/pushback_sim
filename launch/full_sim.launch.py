@@ -11,7 +11,6 @@ def generate_launch_description():
     this_dir = get_package_share_directory('pushback_sim')
     otto_gz = get_package_share_directory('otto_gazebo')
     otto_br = get_package_share_directory('otto_bringup')
-
    
     # world launch file
     world = IncludeLaunchDescription(

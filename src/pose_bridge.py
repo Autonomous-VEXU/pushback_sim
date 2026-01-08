@@ -15,6 +15,8 @@ class PoseBridge(Node):
         # world name for pose topic
         self.world_name = 'pushback_no_blocks'
 
+        # TODO: make this a argument or just automatically get it from a launch file idc 
+
     def echo_gz_topic(self):
 
         result = subprocess.run(

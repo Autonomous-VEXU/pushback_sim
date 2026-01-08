@@ -6,17 +6,10 @@ from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import PoseArray, Point
 from scipy.spatial.transform import Rotation as R
-from std_msgs.msg import Int64MultiArray
+from std_msgs.msg import Float64MultiArray
 from pushback_sim.msg import Ball, BallArray
+from visualization_msgs.msg import Marker
 from typing import Tuple
-
-'''
-pushback_sim/Ball
----
-string object_name
-int64 id
-geometry_msgs/Point location
-'''
 
 class Scoring(Node):
     def __init__(self):
@@ -25,6 +18,8 @@ class Scoring(Node):
         self.create_subscription(BallArray, '/object_locations', self.object_location_callback, 10)
 
         self.collisions = self.create_publisher(Ball, '/robot_collisions', 10)
+
+        self.debug = self.create_publisher(Float64MultiArray, '/debug', 10)
 
         # robot location / pose subscriber
         self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
@@ -49,7 +44,19 @@ class Scoring(Node):
         self.robot_y = msg.poses[-1].position.y
 
         quat = msg.poses[-1].orientation
-        rotation = R.from_quat([quat.x, quat.y, quat.z, quat.w])
+        quat_array = np.array([quat.x, quat.y, quat.z, quat.w])
+
+        #rotation = R.from_quat([quat.x, quat.y, quat.z, quat.w])
+
+        # normalize
+        quat_norm = np.linalg.norm(quat_array)
+        if quat_norm > 0:  # Avoid division by zero
+            quat_normalized = quat_array / quat_norm
+        else:
+            quat_normalized = quat_array  # Fallback
+            
+        rotation = R.from_quat(quat_normalized)
+
         euler = rotation.as_euler('xyz') # THIS IS IN RADIANS!
         self.robot_r = euler[2] # get the yaw (z rotation) value from the returned array
 
@@ -57,33 +64,38 @@ class Scoring(Node):
     
     def object_location_callback(self, msg:BallArray):
         self.objects=msg
-        # TODO: add in filtering for z height (goals vs non goals)
+
+        # TODO: add in filtering for goals/loaders vs floor (5 cm ish)
             
     def check_collision(self):
         h, k = self.robot_x, self.robot_y
         th = self.robot_r
-        r = 0.025
+        r = 0.25
 
         # parametric equations to find a reference point based on the robot's pose
         x = h + r * np.cos(th)
         y = k + r * np.sin(th)
-        self.get_logger().info(f'[CHECK_COLLISION] reference point: x: {x}, y: {y}')
+
+        db = Float64MultiArray()
+        db.data = [x, y]
+        
+        self.debug.publish(db)
 
         # validate ball location helper method
-        def intake_zone(ref_x, ref_y, ball_pos:Point):
-            z_t = 0.05
+        def in_intake_zone(ref_x, ref_y, ball_pos:Point):
+            z_t = 0.06 # meters
+            xy_t = 0.025 # meters <-- dont forget this the "radius" of the valid intake zone
             x_error = abs(ball_pos.x - ref_x)
             y_error = abs(ball_pos.y - ref_y)
 
-            if ball_pos.z < z_t and x_error < 0.10 and y_error < 0.10:
+            if ball_pos.z < z_t and x_error < xy_t and y_error < xy_t:
                 return True
             else:
                 return False
         
         # check all objects for a collision
         for ball in self.objects.object_array:
-            valid = intake_zone(x, y, ball.location)
-            if valid:
+            if in_intake_zone(x, y, ball.location):
                 self.get_logger().info(f"[CHECK_COLLISION] collected ball! {ball.id}")
                 self.collisions.publish(ball)
         
