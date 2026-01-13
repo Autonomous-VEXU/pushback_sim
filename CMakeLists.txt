@@ -11,9 +11,29 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+find_package(geometry_msgs REQUIRED)
+find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/Ball.msg"
+  "msg/BallArray.msg"
+  DEPENDENCIES geometry_msgs
+)
+
 install(
-  DIRECTORY launch worlds models maps
+  DIRECTORY launch worlds models maps msg
   DESTINATION share/${PROJECT_NAME}
+)
+
+# install(
+#   DIRECTORY maps/
+#   DESTINATION share/${PROJECT_NAME}/maps
+# )
+
+install(PROGRAMS
+  src/scoring.py
+  src/pose_bridge.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
