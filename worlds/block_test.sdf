@@ -27,11 +27,6 @@
       name="gz::sim::systems::Imu">
     </plugin>
 
-	<plugin
-        filename="gz-sim-contact-system"
-        name="gz::sim::systems::Contact">
-    </plugin>
-
     <include>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Ground Plane</uri>
     </include>
@@ -72,20 +67,6 @@
         </constraints>
       </ode>
     </physics>
-
-    <!-- different types of blocks-->
-    <include name="vc-sphere">
-        <uri>model://vex-ball-csb</uri>
-        <pose>1 1 0.5 0 0 0</pose>
-		<plugin 
-			filename="gz-sim-touchplugin-system"
-        	name="gz::sim::systems::TouchPlugin">
-			<target>bumper_sensor</target>
-    		<namespace>ball</namespace>
-    		<time>0.001</time>
-    		<enabled>true</enabled>
-		</plugin>
-    </include>
 
     <include name="sphere_r">
         <uri>model://red-sphere</uri>

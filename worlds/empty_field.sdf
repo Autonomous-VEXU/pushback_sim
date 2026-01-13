@@ -1,5 +1,5 @@
 <sdf version='1.10'>
-  <world name='pushback_no_blocks'>
+  <world name='empty_field'>
    <plugin
       filename="gz-sim-physics-system"
       name="gz::sim::systems::Physics">
@@ -78,12 +78,5 @@
     <include>
       <uri>model://clear-objects</uri>
     </include>
-
-    <!--RED BALL-->
-    <include>
-      <uri>model://vex-ball-red</uri>
-      <pose>.5 0 2 0 0 0</pose>
-    </include>
-
   </world>
 </sdf>

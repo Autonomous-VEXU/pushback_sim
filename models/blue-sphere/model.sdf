@@ -22,8 +22,8 @@
               </sphere>
           </geometry>
           <material>
-              <ambient>0.0 0.0 0.8 1.0</ambient>
-              <diffuse>0.0 0.0 0.8 1.0</diffuse>
+              <ambient>0, 0.529, 1 1.0</ambient>
+              <diffuse>0, 0.529, 1 1.0</diffuse>
               <specular>0.1 0.1 0.1 1.0</specular>
               <emissive>0 0 0 1</emissive>
           </material>

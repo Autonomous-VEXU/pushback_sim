@@ -67,6 +67,12 @@
       <static_publisher>false</static_publisher>
       <static_update_frequency>1</static_update_frequency>
     </plugin>
+
+    <plugin filename="librollingFriction.so" name="rolling_friction::RollingFrictionPlugin">
+      <link_name>link</link_name>
+      <coefficient>0.01</coefficient>
+    </plugin> 
+
   </model>
 </sdf>
 
