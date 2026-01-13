@@ -10,6 +10,9 @@ from std_msgs.msg import Float64MultiArray
 from pushback_sim.msg import Ball, BallArray
 from typing import Tuple
 
+from ros_gz_interfaces.srv import DeleteEntity
+from ros_gz_interfaces.msg import Entity
+
 class Scoring(Node):
     def __init__(self):
         super().__init__('scoring')
@@ -23,7 +26,8 @@ class Scoring(Node):
         # robot location / pose subscriber
         self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
 
-        self.robot_hopper = []
+        # service client to remove a ball when it is picked up
+        self.remove_ball = self.create_client(DeleteEntity, '/world/pushback/remove')
 
         self.tol = (0.2, 0.2, 0.1)
         self.z_tol = 0.01
@@ -105,6 +109,7 @@ class Scoring(Node):
             if in_intake_zone(x, y, ball.location):
                 self.get_logger().info(f"[CHECK_COLLISION] collected ball! {ball.id}")
                 self.collisions.publish(ball)
+                self.remove_ball_from_world(ball)
                 return
         self.get_logger().info("no ball found")
         
@@ -167,6 +172,16 @@ class Scoring(Node):
                 elif self.in_bounds(robo_pose, center_goal_pts):
                     return 41
         return 0
+    
+    def remove_ball_from_world(self, msg:Ball):
+        ball = Entity()
+        ball.id = msg.id # copy id of picked up ball to entity
+
+        delete_req = DeleteEntity.Request()
+        delete_req.entity = ball
+
+        self.remove_ball.call_async(delete_req)
+        
     
 def main(args=None):
     rclpy.init(args=args)
