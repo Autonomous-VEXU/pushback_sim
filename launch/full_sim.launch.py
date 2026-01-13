@@ -15,13 +15,13 @@ def generate_launch_description():
     # world launch file
     world = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(this_dir, 'launch', 'world_select.launch.py')),
-        launch_arguments={'world': 'pushback_no_blocks'}.items()
+        launch_arguments={'world': 'pushback'}.items()
     )
 
     # spawn robot
     otto = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(otto_gz, 'launch', 'spawn_robot.launch.py')),
-        launch_arguments={'x_pose': '0.5','y_pose':'0.5'}.items()
+        launch_arguments={'x_pose': '0.5','y_pose': '0.0'}.items()
     )
 
     # enable teleop control

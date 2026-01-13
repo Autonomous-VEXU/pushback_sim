@@ -9,11 +9,11 @@ from pushback_sim.msg import BallArray, Ball
 class PoseBridge(Node):
     def __init__(self):
         super().__init__('pose_bridge')
-        self.auto_update = self.create_timer(1.0, self.update_locations)
+        self.auto_update = self.create_timer(0.5, self.update_locations)
         self.ball_locations = self.create_publisher(BallArray, '/object_locations', 10)
 
         # world name for pose topic
-        self.world_name = 'pushback_no_blocks'
+        self.world_name = 'pushback'
 
         # TODO: make this a argument or just automatically get it from a launch file idc 
 
@@ -39,7 +39,7 @@ class PoseBridge(Node):
         objects = BallArray()
         data = self.echo_gz_topic() # contains one header and the rest are poses/object positions
 
-        non_object_names = ['link', 'Otto']
+        non_object_names = ['link', 'Otto', 'wheel_a', 'wheel_b', 'wheel_c', 'wheel_d']
 
         for pose in data.get("pose", []):
             if pose.get("name") not in non_object_names:

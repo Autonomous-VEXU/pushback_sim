@@ -8,7 +8,6 @@ from geometry_msgs.msg import PoseArray, Point
 from scipy.spatial.transform import Rotation as R
 from std_msgs.msg import Float64MultiArray
 from pushback_sim.msg import Ball, BallArray
-from visualization_msgs.msg import Marker
 from typing import Tuple
 
 class Scoring(Node):
@@ -70,11 +69,11 @@ class Scoring(Node):
     def check_collision(self):
         h, k = self.robot_x, self.robot_y
         th = self.robot_r
-        r = 0.25
-
-        # parametric equations to find a reference point based on the robot's pose
-        x = h + r * np.cos(th)
-        y = k + r * np.sin(th)
+        
+        offset = 0.15 
+        
+        x = h + offset * np.cos(th)
+        y = k + offset * np.sin(th)
 
         db = Float64MultiArray()
         db.data = [x, y]
@@ -82,22 +81,33 @@ class Scoring(Node):
         self.debug.publish(db)
 
         # validate ball location helper method
-        def in_intake_zone(ref_x, ref_y, ball_pos:Point):
-            z_t = 0.06 # meters
-            xy_t = 0.025 # meters <-- dont forget this the "radius" of the valid intake zone
-            x_error = abs(ball_pos.x - ref_x)
-            y_error = abs(ball_pos.y - ref_y)
+        def in_intake_zone(ref_x, ref_y, ball_pos: Point):
+            z_t = 0.06
+            xy_t = 0.10
 
-            if ball_pos.z < z_t and x_error < xy_t and y_error < xy_t:
-                return True
-            else:
-                return False
+            dx = ball_pos.x - ref_x
+            dy = ball_pos.y - ref_y
+
+            th = self.robot_r
+
+            # world → robot frame
+            dx_r =  np.cos(th) * dx + np.sin(th) * dy
+            dy_r = -np.sin(th) * dx + np.cos(th) * dy
+
+            return (
+                abs(dx_r) < xy_t and
+                abs(dy_r) < xy_t and
+                ball_pos.z < z_t
+            )
         
         # check all objects for a collision
         for ball in self.objects.object_array:
             if in_intake_zone(x, y, ball.location):
                 self.get_logger().info(f"[CHECK_COLLISION] collected ball! {ball.id}")
                 self.collisions.publish(ball)
+                return
+        self.get_logger().info("no ball found")
+        
         
     def in_bounds(self, pose:Tuple, goal:Tuple):
         error_x = abs(pose[0] - goal[0])
@@ -170,4 +180,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-      

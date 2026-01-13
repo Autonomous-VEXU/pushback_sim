@@ -1,7 +1,8 @@
 # pushback_sim
 Simulation worlds, maps, CAD models, and game behavior nodes for the VEX Push Back field + a few test envionments. See the repository `Autonomous-VEXU/otto_gazebo` for robot simulation assets.
 
-> Note: If you want to prevent infinite rolling, 
+> Note: If you want to prevent infinite rolling, refer to [this section](#rolling-friction-plugin-setup)
+
 ## Launching a World
 In order to launch a world, the workspace must first be built and sourced. Make sure you are in the correct directory before running the commands: `colcon build --symlink-install` and then `source install/setup.bash`.
 
@@ -22,9 +23,12 @@ Here is a general command to launch a specific world: </br>
 pushback_sim/
 ├── launch/
 │   ├── basic_field.launch.py
+│   ├── full_sim.launch.py
 │   ├── tb3_field.launch.py
 │   └── world_select.launch.py
 ├── maps/
+│   ├── keepout_full_goal.pgm
+│   ├── keepout_full_goal.yaml
 │   ├── vex_field_map.pgm
 │   └── vex_field_map.yaml
 ├── models/
@@ -33,6 +37,12 @@ pushback_sim/
 │   ├── lidar-test-field
 │   ├── red-sphere
 │   └── vex-field
+├── msg/
+│   ├── Ball.msg
+│   └── BallArray.msg
+├── src/
+│   ├── pose_bridge.py
+│   └── scoring.py
 ├── worlds/
 │   ├── block_test.sdf
 │   ├── empty_field.sdf
@@ -54,10 +64,22 @@ models/
     ├── model.config
     └── model.sdf
 ```
+## Nodes
 
-## Rolling Friction Plugin Setup
+### `pose_bridge.py`
+Purpose of this node is to listen to the gazebo topic `/world/default/dynamic_pose/info`, parse the data (JSON) reformat it to include the name of the model and its ID number and republishes it on the `/object_locations` topic.
 
-Both the blue and red spheres use a gazebo plugin called `rollingFriction` the plugin + install instructions can be found here: [kmhswimgirl/gz_rolling_friction](https://github.com/kmhswimgirl/gz_rolling_friction/tree/main)
+### `scoring.py`
+This node has a few functions:
+- Validates picking up blocks by comparing the robot pose to all the blocks that are available to be picked up (on the floor)
+- Compares robot pose to a required pose needed to score. Also assigns ID numbers to all of the actionable locations (goals, loaders, park zones)
+
+coming soon:
+- calls services to update intake status and goal status
+- calls services to add blocks to the loaders
+
+## Rolling Friction Plugin Setup 
+Both the blue and red spheres use a gazebo plugin called `rolling_friction::RollingFrictionPlugin` the plugin + install instructions can be found here: [kmhswimgirl/gz_rolling_friction](https://github.com/kmhswimgirl/gz_rolling_friction/tree/main)
 
 ## ROS + Gazebo Sim Resources:
 [ROS2 Jazzy Jalisco Documentation](https://docs.ros.org/en/jazzy/index.html)</br>
