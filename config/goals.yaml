@@ -3,12 +3,10 @@
 scoring:
   ros__parameters:
     tolerances: # in meters / radians
-      x:
-      y:
-      th:
-    long_goals:
-      q1_q3:
+      x: 
+      y: 
+      th: 
 
-    loaders:
+
 
 
