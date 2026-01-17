@@ -9,7 +9,12 @@
 
       <!--pose of link relative to model-->
       <pose>0 0 0 0 0 0</pose>
-    
+
+
+        <velocity_decay>
+            <linear>0.5</linear>
+        </velocity_decay>
+
       <visual name="visual">
           <geometry>
               <sphere>
@@ -17,8 +22,8 @@
               </sphere>
           </geometry>
           <material>
-              <ambient>0.0 0.0 0.8 1.0</ambient>
-              <diffuse>0.0 0.0 0.8 1.0</diffuse>
+              <ambient>0, 0.529, 1 1.0</ambient>
+              <diffuse>0, 0.529, 1 1.0</diffuse>
               <specular>0.1 0.1 0.1 1.0</specular>
               <emissive>0 0 0 1</emissive>
           </material>
@@ -30,6 +35,14 @@
                   <radius>0.041</radius> <!--should be in cm-->
               </sphere>
           </geometry>
+          <surface>
+            <friction>
+                <ode>
+                    <mu>0.2</mu>
+                    <mu2>0.2</mu2>
+                </ode>
+                </friction>
+            </surface>
       </collision>
 
       <inertial>
@@ -42,7 +55,7 @@
       </inertial>
 
     </link>
-    
+
     <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
       <publish_link_pose>false</publish_link_pose>
       <publish_visual_pose>false</publish_visual_pose>
@@ -55,6 +68,12 @@
       <static_publisher>false</static_publisher>
       <static_update_frequency>1</static_update_frequency>
     </plugin>
+
+    <plugin filename="librollingFriction.so" name="rolling_friction::RollingFrictionPlugin">
+      <link_name>link</link_name>
+      <coefficient>0.01</coefficient>
+    </plugin> 
+
   </model>
 </sdf>
 
