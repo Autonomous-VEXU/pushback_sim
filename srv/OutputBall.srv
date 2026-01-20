@@ -1,0 +1,4 @@
+int64 height # 1 = low, 2 = medium, 3 = high
+int64 location_id # non zero value means at a scoring location
+---
+bool success # return true if scored or dropped, false if no blocks in hopper

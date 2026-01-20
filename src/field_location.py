@@ -14,17 +14,13 @@ from pushback_sim.srv import IntakeBall
 from ros_gz_interfaces.srv import DeleteEntity
 from ros_gz_interfaces.msg import Entity
 
-'''
-things to note:
- - when you are not in a goal zone and you hit the score button, a ball will drop on the ground == drop ball service
- - in a goal zone == score ball service
- - 
-'''
-
 class FieldLocation(Node):
     def __init__(self):
         super().__init__('field_location')
+        # subscribe to teleop controller feedback
         self.create_subscription(Joy, '/joy', self.controller_callback, 10)
+
+        # subscribe to pose_bridge.py's output topic
         self.create_subscription(BallArray, '/object_locations', self.object_location_callback, 10)
 
         # debug topic that i should remove later
@@ -47,13 +43,13 @@ class FieldLocation(Node):
 
     def controller_callback(self, msg:Joy):
         '''handle controller input'''
-        # self.get_logger().info('getting controller messages')
         # check controller input for the intake / scoring buttons being pressed
+
         if msg.buttons[0] == 1: # ball out
             location = self.check_location()
             self.get_logger().info(f'Otto is at goal ID: {location}')
         elif msg.buttons[1] == 1: # activate intake
-            # intake funtion
+            # intake service (eventually)
             self.check_collision()
 
     def robot_pose_callback(self, msg:PoseArray):
@@ -87,7 +83,7 @@ class FieldLocation(Node):
         center_high = []
 
         def dist_from_line(p1:tuple, p2:tuple, p3:tuple):
-            ''' distance a ball is from the line formed by the two ends of the goal'''
+            '''distance a ball is from the line formed by the two ends of the goal'''
             p1 = np.array(p1)
             p2 = np.array(p2)
             p3 = np.array(p3)
@@ -176,13 +172,22 @@ class FieldLocation(Node):
         for ball in self.objects.object_array:
             if in_intake_zone(x, y, ball.location): # maybe just make this return true/false?
 
-                # call the intake service --> intake.py
+                # call the intake service --> intake.py (also need to determine color!)
                 intake_req = IntakeBall.Request()
                 intake_req.ball_id = ball.id
+                intake_req.color = self.ball_color(ball)
                 self.intake_ball.call_async(intake_req)
                 return
             
         self.get_logger().info("no ball found")
+    
+    def ball_color(self, ball:Ball):
+        '''return ball color. red = 1, blue = 2'''
+        red_identifyers = ["red", "R"]
+        if any(sub in ball.object_name for sub in red_identifyers):
+            return 1
+        else:
+            return 2
         
     def in_bounds(self, pose:Tuple, goal:Tuple, tol:tuple):
         '''helper method so i dont have to type the same thing 20 times '''
@@ -196,7 +201,7 @@ class FieldLocation(Node):
             return False
     
     def get_quadrant(self):
-        '''which quadrant of the field am i in'''
+        '''which quadrant of the field am I in'''
         if self.robot_x >= 0 and self.robot_y >= 0: # quadrant 1
             return 1
         elif self.robot_x < 0 and self.robot_y >= 0: # quadrant 2

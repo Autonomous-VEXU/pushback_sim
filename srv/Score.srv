@@ -1,4 +1,0 @@
-int64 goal_id
-int64 color
----
-bool success

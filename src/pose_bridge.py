@@ -54,7 +54,6 @@ class PoseBridge(Node):
                     objects.object_array.append(ball)
     
         self.ball_locations.publish(objects)
-       
 
 def main(args=None):
     rclpy.init(args=args)

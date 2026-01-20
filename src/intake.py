@@ -20,15 +20,15 @@ class RobotIntake(Node):
     def __init__(self, matchload:bool):
         super().__init__('intake')
 
-        # subscribe to collisions???
-
         # gazebo services
         self.remove_ball = self.create_client(DeleteEntity, '/world/pushback/remove')
         self.spawn_ball = self.create_client(SpawnEntity, '/world/pushback/create')
 
-        # my services
+        # intaking a ball service
         self.intake_ball = self.create_service(IntakeBall, '/robot_intake', self.intake_ball)
-        self.score_goal = self.create_service()
+
+        # publishing the current state of the intake
+        self.robot_hopper_status = self.create_publisher(BallArray, '/robot_intake_status', 10)
 
         self.hopper_limit = 12
         self.matchload = matchload
@@ -38,7 +38,7 @@ class RobotIntake(Node):
         else:
             self.robot_intake:queue = []
 
-    def intake_ball(self, request): # service
+    def intake_ball(self, request, response): # service
         '''/robot_collisions callback function'''
         if len(self.robot_intake) < 12:
             self.remove_ball(request.ball_id)    
@@ -51,7 +51,6 @@ class RobotIntake(Node):
         '''outputting a ball when scoring is not viable'''
         # get latest ball by popping from the queue 
         ball = self.robot_intake.pop()
-        
 
         pass
 
