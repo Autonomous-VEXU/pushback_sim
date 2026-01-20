@@ -9,10 +9,10 @@ from scipy.spatial.transform import Rotation as R
 from std_msgs.msg import Float64MultiArray
 from pushback_sim.msg import Ball, BallArray, GoalState
 from typing import Tuple
-from pushback_sim.srv import IntakeBall
+from pushback_sim.srv import IntakeBall, OutputBall
 
-from ros_gz_interfaces.srv import DeleteEntity
-from ros_gz_interfaces.msg import Entity
+# from ros_gz_interfaces.srv import DeleteEntity
+# from ros_gz_interfaces.msg import Entity
 
 class FieldLocation(Node):
     def __init__(self):
@@ -32,11 +32,9 @@ class FieldLocation(Node):
         # robot location / pose subscriber
         self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
 
-        # service client to remove a ball when it is picked up
-        self.remove_ball = self.create_client(DeleteEntity, '/world/pushback/remove')
-
         # service client for intaking a ball
         self.intake_ball = self.create_client(IntakeBall, '/robot_intake')
+        self.ball_action = self.create_client(OutputBall, '/score_ball')
 
         self.tol = (0.2, 0.2, 0.1)
         self.z_tol = 0.01
@@ -44,20 +42,22 @@ class FieldLocation(Node):
         # controller debounce
         self.prev_button_0 = 0
         self.prev_button_1 = 0
+        self.prev_button_2 = 0 
 
     def controller_callback(self, msg:Joy):
         '''handle controller input'''
-        # check controller input for the intake / scoring buttons being pressed
 
-        if msg.buttons[0] == 1 and self.prev_button_0 == 0: # ball out
-            location = self.check_location()
-            self.get_logger().info(f'Otto is at goal ID: {location}')
-        elif msg.buttons[1] == 1 and self.prev_button_1 == 0: # activate intake
-            #
+        # check controller input for the intake / scoring buttons being pressed
+        if msg.buttons[1] == 1 and self.prev_button_1 == 0: # output mid
+            self.scoring_callback(2)
+        elif msg.buttons[0] == 1 and self.prev_button_0 == 0: # activate intake
             self.check_collision()
+        elif msg.buttons[2] ==1 and self.prev_button_2 == 0: # output high
+            self.scoring_callback(3)
 
         self.prev_button_0 = msg.buttons[0]
         self.prev_button_1 = msg.buttons[1]
+        self.prev_button_2 = msg.buttons[2]
 
     def robot_pose_callback(self, msg:PoseArray):
         '''record the current pose of the robot'''
@@ -258,15 +258,16 @@ class FieldLocation(Node):
                     return 41
         return 0
     
-    def remove_ball_from_world(self, msg:Ball):
-        '''remove this soon'''
-        ball = Entity()
-        ball.id = msg.id # copy id of picked up ball to entity
+    def scoring_callback(self, height):
+        location = self.check_location()
+        self.get_logger().info(f'Otto is at goal ID: {location}')
 
-        delete_req = DeleteEntity.Request()
-        delete_req.entity = ball
+        info = OutputBall.Request()
+        info.height = height
+        info.goal_id = location
 
-        self.remove_ball.call_async(delete_req)
+        self.ball_action.call_async(info)
+
     
 def main(args=None):
     rclpy.init(args=args)

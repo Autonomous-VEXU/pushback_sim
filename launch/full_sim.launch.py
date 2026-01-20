@@ -45,8 +45,8 @@ def generate_launch_description():
     # pose bridge
     object_poses = Node(
         package='pushback_sim',
-        executable='pose_bridge.py',
-        output='screen'
+        executable='pose_bridge.py'
+        # output='screen'
     )
 
     # scoring

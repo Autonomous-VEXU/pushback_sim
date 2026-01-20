@@ -24,8 +24,6 @@ class WorldServices(Node):
         # subscribe to goal contents
         self.create_subscription(GoalState, '/goals', self.save_goal_state, 10) # might upgrade message to "worldState" to include loaders
 
-        # subscribe to loader contents (eventually...)
-
         # my services
         self.output_ball = self.create_service(OutputBall, '/score_ball', self.output_ball)
         self.add_to_loader = self.create_service(Loader, '/loader', self.add_to_loader)
@@ -65,7 +63,6 @@ class WorldServices(Node):
             3 : [12, 22, 32, 42] # tall
         }
 
-
     def save_goal_state(self, msg:GoalState):
         self.goal_state = msg
 
@@ -89,12 +86,12 @@ class WorldServices(Node):
         ''' meta function that determines what action should occur with the ball being output based on 
             current location, height attempted, and robot hopper status'''
 
-        if len(self.robot_hopper_contents) == 0: # no blocks in hopper edge case
+        if len(self.robot_intake) == 0: # no blocks in hopper edge case
             # log that there is nothing to output
             response.success = False
             return response
         
-        ball_color = self.robot_hopper_contents.pop(0) # get first item in robot_hopper (i think)
+        ball_color = self.robot_intake.pop(0) # get first item in robot_hopper (i think)
         
         def check_output_height(goal_id, height):
             ''' helper for verifying height matches goal id '''
@@ -105,19 +102,20 @@ class WorldServices(Node):
         
         if check_output_height(request.goal_id, request.height): # output height matches goal id
             self.score_goal(request.goal_id, ball_color)
+            self.get_logger().info(f'robot intake status: {self.robot_intake}')
             response.success = True
         else: 
             self.drop_ball(ball_color)
+            self.get_logger().info(f'robot intake status: {self.robot_intake}')
             response.success = True
-    
         return response
 
     def drop_ball(self, ball_color:int):
         '''handles if the robot has blocks but is not in a scoring location'''
-        pass
+        self.spawn_block(ball_color, 0.0, 0.0, 0.8)
+        self.get_logger().info("dropped ball!")
         
     def score_goal(self, goal_id, color):
-    
         goal_location = self.goal_locations[goal_id]
         
         if goal_id in [12, 42]:  # long goal a
@@ -141,7 +139,6 @@ class WorldServices(Node):
         goal_contents_sorted = sorted(goal_contents, key=distance_to_goal)
 
         goal_queue = deque(goal_contents_sorted)
-
 
     def clear_goal(self, goal_id:int):
         '''remove all of the blocks from a goal'''
@@ -201,6 +198,27 @@ class WorldServices(Node):
         return response
 
     # ----------------- Helper Functions -------------------- # 
+
+    def spawn_block(self, color:int, x:float, y:float, z:float):
+        ball = EntityFactory()
+        ball.allow_renaming = True
+
+        if color == 1:
+            model_pkg_path = '/home/kymadogg/ros2_ws/src/mqp/pushback_sim/models/red-sphere/model.sdf'
+
+        elif color == 2:
+            model_pkg_path = '/home/kymadogg/ros2_ws/src/mqp/pushback_sim/models/blue-sphere/model.sdf'
+        
+        ball.sdf_filename = model_pkg_path
+        ball.pose.position.x = x
+        ball.pose.position.y = y
+        ball.pose.position.z = z
+
+        spawn_req = SpawnEntity.Request()
+        spawn_req.entity_factory = ball
+        
+        self.spawn_ball.call_async(spawn_req)
+        return True
 
     def delete_block(self, msg): # msg = ball id
         '''DeleteEntity wrapper function for deleting a block'''
