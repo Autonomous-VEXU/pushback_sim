@@ -106,18 +106,19 @@ class FieldLocation(Node):
 
         # sort the ball array into the different goals. there is probably a way better way to do this that I am not doing. 
         # TODO: refactor all of this later.
-        
+
         for ball in msg.object_array: 
             ball_xy = (ball.location.x, ball.location.y)
             if ball.location.z > 0.38: # long goals
-                if dist_from_line((1.20, -0.57), (1.20, 0.57), ball_xy) < 0.03: # if in goal_1_4
+                if self.in_bounds(ball_xy, (1.20, 0), (0.04, 0.6)): # if in goal_1_4
                     long_1_4.append(ball)
-                elif dist_from_line((1.20, -0.57), (1.20, 0.57), ball_xy) < 0.03: # if in goal_2_3
+                elif self.in_bounds(ball_xy, (-1.20, 0), (0.04, 0.6)): # if in goal_2_3
                     long_2_3.append(ball)
-            if 0.25 < ball.location.z < 0.30 and dist_from_line((0.15, 0.15), (-0.15, -0.15), ball_xy) < 0.03: # top center goal
-                center_high.append(ball)
-            if 0.04 < ball.location.z < 0.10 and dist_from_line((-0.15, 0.15), (0.15, -0.15), ball_xy) < 0.03: # lower center goal
-                center_low.append(ball)
+            elif self.in_bounds(ball_xy, (0.0, 0.0), (0.15, 0.15)): # center goals
+                if 0.25 < ball.location.z < 0.30 and dist_from_line((0.15, 0.15), (-0.15, -0.15), ball_xy) < 0.03: # top center goal
+                    center_high.append(ball)
+                elif 0.05 < ball.location.z < 0.10 and dist_from_line((-0.15, 0.15), (0.15, -0.15), ball_xy) < 0.03: # lower center goal
+                    center_low.append(ball)
             else:
                 continue
 
@@ -137,6 +138,7 @@ class FieldLocation(Node):
         self.goals.publish(goal_state)
             
     def check_collision(self):
+        '''did the robot collide with a ball or not'''
         h, k = self.robot_x, self.robot_y
         th = self.robot_r
         
@@ -178,21 +180,23 @@ class FieldLocation(Node):
                 intake_req = IntakeBall.Request()
                 intake_req.ball_id = ball.id
                 self.intake_ball.call_async(intake_req)
-
                 return
+            
         self.get_logger().info("no ball found")
         
-    def in_bounds(self, pose:Tuple, goal:Tuple):
+    def in_bounds(self, pose:Tuple, goal:Tuple, tol:tuple):
+        '''helper method so i dont have to type the same thing 20 times '''
         error_x = abs(pose[0] - goal[0])
         error_y = abs(pose[1] - goal[1])
        # error_r = abs(pose[2] - goal[2])
 
-        if error_x < self.tol[0] and error_y < self.tol[1]: # add rotational error back soon ...
+        if error_x < tol[0] and error_y < tol[1]: # add rotational error back soon ...
             return True
         else:
             return False
     
     def get_quadrant(self):
+        '''which quadrant of the field am i in'''
         if self.robot_x >= 0 and self.robot_y >= 0: # quadrant 1
             return 1
         elif self.robot_x < 0 and self.robot_y >= 0: # quadrant 2
@@ -203,6 +207,7 @@ class FieldLocation(Node):
             return 4
         
     def check_location(self):
+        '''verify that I am in a location that I can score'''
         robot_pose = (self.robot_x, self.robot_y)
         q = self.get_quadrant()
 
@@ -211,37 +216,38 @@ class FieldLocation(Node):
 
         match q:
             case 1:
-                if self.in_bounds(robot_pose, long_goal_pts):
+                if self.in_bounds(robot_pose, long_goal_pts, self.tol):
                     return 12
-                elif self.in_bounds(robot_pose, center_goal_pts):
+                elif self.in_bounds(robot_pose, center_goal_pts,self.tol):
                     return 11
             case 2:
                 long_goal_pts = (-long_goal_pts[0], long_goal_pts[1])
                 center_goal_pts = (-center_goal_pts[0], center_goal_pts[1])
 
-                if self.in_bounds(robot_pose, long_goal_pts):
+                if self.in_bounds(robot_pose, long_goal_pts,self.tol):
                     return 22
-                elif self.in_bounds(robot_pose, center_goal_pts):
+                elif self.in_bounds(robot_pose, center_goal_pts,self.tol):
                     return 21
             case 3:
                 long_goal_pts = (-long_goal_pts[0], -long_goal_pts[1])
                 center_goal_pts = (-center_goal_pts[0], -center_goal_pts[1])
 
-                if self.in_bounds(robot_pose, long_goal_pts):
+                if self.in_bounds(robot_pose, long_goal_pts, self.tol):
                     return 32
-                elif self.in_bounds(robot_pose, center_goal_pts):
+                elif self.in_bounds(robot_pose, center_goal_pts, self.tol):
                     return 31
             case 4:
                 long_goal_pts = (long_goal_pts[0], -long_goal_pts[1])
                 center_goal_pts = (center_goal_pts[0], -center_goal_pts[1])
                
-                if self.in_bounds(robot_pose, long_goal_pts):
+                if self.in_bounds(robot_pose, long_goal_pts, self.tol):
                     return 42
-                elif self.in_bounds(robot_pose, center_goal_pts):
+                elif self.in_bounds(robot_pose, center_goal_pts, self.tol):
                     return 41
         return 0
     
     def remove_ball_from_world(self, msg:Ball):
+        '''remove this soon'''
         ball = Entity()
         ball.id = msg.id # copy id of picked up ball to entity
 
