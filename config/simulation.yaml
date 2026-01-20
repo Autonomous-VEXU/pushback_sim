@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    our_color: 1 # red = 1, blue = 2
+    matchload: True
+    pkg_path: '/home/kymadogg/ros2_ws/src/mqp'
+    intake_capacity: 12
+
+    # goal configuration ()
+    center_low:
+    center_high:
+    long_1_4:
+    long_2_3:
+
+

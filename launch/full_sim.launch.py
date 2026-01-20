@@ -33,9 +33,10 @@ def generate_launch_description():
     delete_object_bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
-        name='delete_entity_bridge',
+        name='entity_services_bridge',
         arguments=[
-            '/world/pushback/remove@ros_gz_interfaces/srv/DeleteEntity'
+            '/world/pushback/remove@ros_gz_interfaces/srv/DeleteEntity',
+            '/world/pushback/create@ros_gz_interfaces/srv/SpawnEntity'
         ],
         parameters=[{'use_sim_time': True}],
         output='screen'
@@ -51,14 +52,14 @@ def generate_launch_description():
     # scoring
     scoring = Node(
         package='pushback_sim',
-        executable='scoring.py',
+        executable='field_location.py',
         output='screen'
     )
 
     return LaunchDescription([
         world, 
         otto, 
-        teleop,
+        # teleop,
         object_poses,
         delete_object_bridge,
         scoring

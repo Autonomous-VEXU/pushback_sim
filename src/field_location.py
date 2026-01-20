@@ -7,21 +7,31 @@ from sensor_msgs.msg import Joy
 from geometry_msgs.msg import PoseArray, Point
 from scipy.spatial.transform import Rotation as R
 from std_msgs.msg import Float64MultiArray
-from pushback_sim.msg import Ball, BallArray
+from pushback_sim.msg import Ball, BallArray, GoalState
 from typing import Tuple
+from pushback_sim.srv import IntakeBall
 
 from ros_gz_interfaces.srv import DeleteEntity
 from ros_gz_interfaces.msg import Entity
 
-class Scoring(Node):
+'''
+things to note:
+ - when you are not in a goal zone and you hit the score button, a ball will drop on the ground == drop ball service
+ - in a goal zone == score ball service
+ - 
+'''
+
+class FieldLocation(Node):
     def __init__(self):
-        super().__init__('scoring')
+        super().__init__('field_location')
         self.create_subscription(Joy, '/joy', self.controller_callback, 10)
         self.create_subscription(BallArray, '/object_locations', self.object_location_callback, 10)
 
-        self.collisions = self.create_publisher(Ball, '/robot_collisions', 10)
-
+        # debug topic that i should remove later
         self.debug = self.create_publisher(Float64MultiArray, '/debug', 10)
+
+        # publishers for entities in goals
+        self.goals = self.create_publisher(GoalState, '/goals', 10)
 
         # robot location / pose subscriber
         self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
@@ -29,10 +39,14 @@ class Scoring(Node):
         # service client to remove a ball when it is picked up
         self.remove_ball = self.create_client(DeleteEntity, '/world/pushback/remove')
 
+        # service client for intaking a ball
+        self.intake_ball = self.create_client(IntakeBall, '/robot_intake')
+
         self.tol = (0.2, 0.2, 0.1)
         self.z_tol = 0.01
 
     def controller_callback(self, msg:Joy):
+        '''handle controller input'''
         # self.get_logger().info('getting controller messages')
         # check controller input for the intake / scoring buttons being pressed
         if msg.buttons[0] == 1: # ball out
@@ -43,32 +57,84 @@ class Scoring(Node):
             self.check_collision()
 
     def robot_pose_callback(self, msg:PoseArray):
+        '''record the current pose of the robot'''
         self.robot_x = msg.poses[-1].position.x
         self.robot_y = msg.poses[-1].position.y
 
         quat = msg.poses[-1].orientation
         quat_array = np.array([quat.x, quat.y, quat.z, quat.w])
 
-        #rotation = R.from_quat([quat.x, quat.y, quat.z, quat.w])
-
         # normalize
         quat_norm = np.linalg.norm(quat_array)
-        if quat_norm > 0:  # Avoid division by zero
+        if quat_norm > 0: 
             quat_normalized = quat_array / quat_norm
         else:
-            quat_normalized = quat_array  # Fallback
+            quat_normalized = quat_array 
             
         rotation = R.from_quat(quat_normalized)
 
         euler = rotation.as_euler('xyz') # THIS IS IN RADIANS!
         self.robot_r = euler[2] # get the yaw (z rotation) value from the returned array
-
-        # self.get_logger().info(f" ROBOT POSE: x:{self.robot_x} y:{self.robot_y} r:{self.robot_r}")
     
     def object_location_callback(self, msg:BallArray):
+        '''read all of the objects published from the pose_bridge node and see if they are in a goal or not '''
         self.objects=msg
 
-        # TODO: add in filtering for goals/loaders vs floor (5 cm ish)
+        goal_state = GoalState()
+        long_1_4 = []
+        long_2_3 = []
+        center_low = []
+        center_high = []
+
+        def dist_from_line(p1:tuple, p2:tuple, p3:tuple):
+            ''' distance a ball is from the line formed by the two ends of the goal'''
+            p1 = np.array(p1)
+            p2 = np.array(p2)
+            p3 = np.array(p3)
+           
+            p1p2_vec = p2 - p1
+            p1p3_vec = p3 - p1
+            
+            cross_product_mag = np.linalg.norm(np.cross(p1p2_vec, p1p3_vec), axis=-1) if p3.ndim > 1 else np.linalg.norm(np.cross(p1p2_vec, p1p3_vec))
+            
+            p1p2_mag = np.linalg.norm(p1p2_vec)
+            
+            if p1p2_mag == 0:
+                return np.linalg.norm(p1p3_vec, axis=-1) if p3.ndim > 1 else np.linalg.norm(p1p3_vec)
+
+            return cross_product_mag / p1p2_mag
+
+        # sort the ball array into the different goals. there is probably a way better way to do this that I am not doing. 
+        # TODO: refactor all of this later.
+        
+        for ball in msg.object_array: 
+            ball_xy = (ball.location.x, ball.location.y)
+            if ball.location.z > 0.38: # long goals
+                if dist_from_line((1.20, -0.57), (1.20, 0.57), ball_xy) < 0.03: # if in goal_1_4
+                    long_1_4.append(ball)
+                elif dist_from_line((1.20, -0.57), (1.20, 0.57), ball_xy) < 0.03: # if in goal_2_3
+                    long_2_3.append(ball)
+            if 0.25 < ball.location.z < 0.30 and dist_from_line((0.15, 0.15), (-0.15, -0.15), ball_xy) < 0.03: # top center goal
+                center_high.append(ball)
+            if 0.04 < ball.location.z < 0.10 and dist_from_line((-0.15, 0.15), (0.15, -0.15), ball_xy) < 0.03: # lower center goal
+                center_low.append(ball)
+            else:
+                continue
+
+        # publish the updated GoalState message
+        goal_state.center_low = BallArray()
+        goal_state.center_low.object_array = center_low
+        
+        goal_state.center_high = BallArray()
+        goal_state.center_high.object_array = center_high
+        
+        goal_state.long_a = BallArray()
+        goal_state.long_a.object_array = long_1_4
+        
+        goal_state.long_b = BallArray()
+        goal_state.long_b.object_array = long_2_3
+
+        self.goals.publish(goal_state)
             
     def check_collision(self):
         h, k = self.robot_x, self.robot_y
@@ -82,7 +148,7 @@ class Scoring(Node):
         db = Float64MultiArray()
         db.data = [x, y]
         
-        self.debug.publish(db)
+        self.debug.publish(db) # remove this later
 
         # validate ball location helper method
         def in_intake_zone(ref_x, ref_y, ball_pos: Point):
@@ -107,12 +173,14 @@ class Scoring(Node):
         # check all objects for a collision
         for ball in self.objects.object_array:
             if in_intake_zone(x, y, ball.location):
-                self.get_logger().info(f"[CHECK_COLLISION] collected ball! {ball.id}")
-                self.collisions.publish(ball)
-                self.remove_ball_from_world(ball)
+
+                # call the intake service --> intake.py
+                intake_req = IntakeBall.Request()
+                intake_req.ball_id = ball.id
+                self.intake_ball.call_async(intake_req)
+
                 return
         self.get_logger().info("no ball found")
-        
         
     def in_bounds(self, pose:Tuple, goal:Tuple):
         error_x = abs(pose[0] - goal[0])
@@ -135,7 +203,7 @@ class Scoring(Node):
             return 4
         
     def check_location(self):
-        robo_pose = (self.robot_x, self.robot_y)
+        robot_pose = (self.robot_x, self.robot_y)
         q = self.get_quadrant()
 
         long_goal_pts = (1.20, 0.7, -1.57) # y is estimated 
@@ -143,33 +211,33 @@ class Scoring(Node):
 
         match q:
             case 1:
-                if self.in_bounds(robo_pose, long_goal_pts):
+                if self.in_bounds(robot_pose, long_goal_pts):
                     return 12
-                elif self.in_bounds(robo_pose, center_goal_pts):
+                elif self.in_bounds(robot_pose, center_goal_pts):
                     return 11
             case 2:
                 long_goal_pts = (-long_goal_pts[0], long_goal_pts[1])
                 center_goal_pts = (-center_goal_pts[0], center_goal_pts[1])
 
-                if self.in_bounds(robo_pose, long_goal_pts):
+                if self.in_bounds(robot_pose, long_goal_pts):
                     return 22
-                elif self.in_bounds(robo_pose, center_goal_pts):
+                elif self.in_bounds(robot_pose, center_goal_pts):
                     return 21
             case 3:
                 long_goal_pts = (-long_goal_pts[0], -long_goal_pts[1])
                 center_goal_pts = (-center_goal_pts[0], -center_goal_pts[1])
 
-                if self.in_bounds(robo_pose, long_goal_pts):
+                if self.in_bounds(robot_pose, long_goal_pts):
                     return 32
-                elif self.in_bounds(robo_pose, center_goal_pts):
+                elif self.in_bounds(robot_pose, center_goal_pts):
                     return 31
             case 4:
                 long_goal_pts = (long_goal_pts[0], -long_goal_pts[1])
                 center_goal_pts = (center_goal_pts[0], -center_goal_pts[1])
                
-                if self.in_bounds(robo_pose, long_goal_pts):
+                if self.in_bounds(robot_pose, long_goal_pts):
                     return 42
-                elif self.in_bounds(robo_pose, center_goal_pts):
+                elif self.in_bounds(robot_pose, center_goal_pts):
                     return 41
         return 0
     
@@ -181,11 +249,10 @@ class Scoring(Node):
         delete_req.entity = ball
 
         self.remove_ball.call_async(delete_req)
-        
     
 def main(args=None):
     rclpy.init(args=args)
-    node = Scoring()
+    node = FieldLocation()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
