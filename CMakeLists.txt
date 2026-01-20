@@ -20,7 +20,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/GoalState.msg"
   "srv/Score.srv"
   "srv/IntakeBall.srv"
-  "srv/AddToLoader.srv"
+  "srv/Loader.srv"
   DEPENDENCIES geometry_msgs
 )
 

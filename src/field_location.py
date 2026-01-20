@@ -174,7 +174,7 @@ class FieldLocation(Node):
         
         # check all objects for a collision
         for ball in self.objects.object_array:
-            if in_intake_zone(x, y, ball.location):
+            if in_intake_zone(x, y, ball.location): # maybe just make this return true/false?
 
                 # call the intake service --> intake.py
                 intake_req = IntakeBall.Request()

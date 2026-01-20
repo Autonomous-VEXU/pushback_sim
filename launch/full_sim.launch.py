@@ -56,11 +56,19 @@ def generate_launch_description():
         output='screen'
     )
 
+    # scoring
+    world_services = Node(
+        package='pushback_sim',
+        executable='world_services.py',
+        output='screen'
+    )
+
     return LaunchDescription([
         world, 
         otto, 
         # teleop,
         object_poses,
         delete_object_bridge,
+        world_services,
         scoring
     ])
