@@ -267,7 +267,6 @@ class FieldLocation(Node):
         info.goal_id = location
 
         self.ball_action.call_async(info)
-
     
 def main(args=None):
     rclpy.init(args=args)

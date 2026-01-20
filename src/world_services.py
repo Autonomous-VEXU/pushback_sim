@@ -10,16 +10,24 @@ from scipy.spatial.transform import Rotation as R
 from std_msgs.msg import Float64MultiArray
 from pushback_sim.msg import Ball, BallArray, GoalState
 from pushback_sim.srv import OutputBall, Loader, IntakeBall
-from typing import Tuple
+from typing import Tuple, List
 from collections import deque
+from dataclasses import dataclass
 
 from ros_gz_interfaces.srv import DeleteEntity, SpawnEntity
 from ros_gz_interfaces.msg import EntityFactory, Entity
 
+@dataclass
+class Goal:
+    capacity: int
+    contents: deque
+    endpoints: List
+    height: float
+
 class WorldServices(Node):
     def __init__(self):
         super().__init__('world_services')
-        # load params from yaml file
+        # load params from yaml file (eventually... )
         # self.package_path =  self.get_parameter('pkg_path').get_parameter_value().string_value
 
         # subscribe to goal contents
@@ -42,6 +50,34 @@ class WorldServices(Node):
         self.blue_blocks_left = 12
         self.red_blocks_left = 12
 
+        self.goal_1_4 = Goal(
+            capacity = 16,
+            endpoints = [12, 42],
+            contents = deque(maxlen=16),
+            height = 0.39
+        )
+
+        self.goal_2_3 = Goal(
+            capacity = 16,
+            endpoints = [22, 32],
+            contents = deque(maxlen=16),
+            height = 0.39
+        )
+
+        self.center_mid = Goal(
+            capacity = 6,
+            endpoints = [11, 31],
+            contents = deque(maxlen=6),
+            height = 0.27
+        )
+
+        self.center_low = Goal(
+            capacity = 6,
+            endpoints = [21, 41],
+            contents = deque(maxlen=6),
+            height = 0.06
+        )
+
         # my global values
         self.goal_locations = {
             11: (0.15, 0.15, 0.27),
@@ -62,8 +98,8 @@ class WorldServices(Node):
         }
 
         self.goal_heights = {
-            1 : [], # low
-            2 : [], # medium
+            1 : [21, 41], # low (doubel check this later)
+            2 : [11, 31], # medium
             3 : [12, 22, 32, 42] # tall
         }
 
@@ -143,45 +179,64 @@ class WorldServices(Node):
         
         self.get_logger().info("dropped ball!")
         
-    def score_goal(self, goal_id, color):
-        goal_location = self.goal_locations[goal_id]
-        
-        if goal_id in [12, 42]:  # long goal a
-            goal_contents = self.goal_state.long_a.object_array
-        elif goal_id in [22, 32]:  # long goal b
-            goal_contents = self.goal_state.long_b.object_array
-        elif goal_id in [11, 31]:  # center low
-            goal_contents = self.goal_state.center_low.object_array
-        elif goal_id in [21, 41]:  # center high
-            goal_contents = self.goal_state.center_high.object_array
-        else:
-            self.get_logger().error(f"Invalid goal_id: {goal_id}")
-            return
-        
-        # sort by distance to scoring location (2D)
-        def distance_to_goal(ball):
-            dx = ball.location.x - goal_location[0]
-            dy = ball.location.y - goal_location[1]
-            return np.sqrt(dx**2 + dy**2)
-        
-        goal_contents_sorted = sorted(goal_contents, key=distance_to_goal)
+    def score_goal(self, goal_id:int, color:int):
 
-        goal_queue = deque(goal_contents_sorted)
+        self.clear_goal(goal_id)
+
+        match goal_id:
+            case 11:
+                self.center_mid.contents.append(color)
+                self.update_goal_entities(self.center_mid, color)
+            case 21:
+                self.center_low.contents.append(color)
+                self.update_goal_entities(self.center_low, color)
+            case 31:
+                self.center_mid.contents.append(color)
+                self.update_goal_entities(self.center_mid, color)
+            case 41:
+                self.center_low.contents.append(color)
+                self.update_goal_entities(self.center_low, color)
+            case 12:
+                self.goal_1_4.contents.appendleft(color)
+                self.update_goal_entities(self.goal_1_4, color)
+            case 22:
+                self.goal_2_3.contents.append(color)
+                self.update_goal_entities(self.goal_2_3, color)
+            case 32:
+                self.goal_2_3.contents.append(color)
+                self.update_goal_entities(self.goal_2_3, color)
+            case 42:
+                self.goal_1_4.contents.append(color)
+                self.update_goal_entities(self.goal_1_4, color)
+            
+    def update_goal_entities(self, goal:Goal, color):
+
+        points = self.get_intermediate_points(  
+            self.goal_locations[goal.endpoints[0]][:2],  # (x, y) from first endpoint
+            self.goal_locations[goal.endpoints[1]][:2],  # (x, y) from second endpoint
+            len(goal.contents))
+        
+        for (x,y), color in zip(points, goal.contents):
+            self.spawn_block(color, x, y, goal.height)
+
+    # def add_overflow_block(self):
+
+    #     pass
 
     def clear_goal(self, goal_id:int):
         '''remove all of the blocks from a goal'''
         if goal_id == 22 or goal_id == 32: # long goal b
             for block in self.goal_state.long_b.object_array:
-               self.delete_block(block)
+               self.delete_block(block.id)
         elif goal_id == 42 or goal_id == 12: # long goal a
             for block in self.goal_state.long_a.object_array:
-               self.delete_block(block)
+               self.delete_block(block.id)
         elif goal_id == 11 or goal_id == 31: # center low
             for block in self.goal_state.center_low.object_array:
-               self.delete_block(block)
+               self.delete_block(block.id)
         elif goal_id == 21 or goal_id == 41: # center high
             for block in self.goal_state.center_high.object_array:
-               self.delete_block(block)
+               self.delete_block(block.id)
     
     # ----------------- Loader Service Functions -------------------- # 
     def add_to_loader(self, request:Loader.Request, response):
@@ -201,6 +256,7 @@ class WorldServices(Node):
                 return response
             model_pkg_path = '/home/kymadogg/ros2_ws/src/mqp/pushback_sim/models/red-sphere/model.sdf'
             self.red_blocks_left = self.red_blocks_left - 1
+            self.get_logger().info(f"Red blocks left: {self.red_blocks_left}")
 
         if request.color == 2:
             if self.blue_blocks_left == 0:
@@ -208,6 +264,7 @@ class WorldServices(Node):
                 return response
             model_pkg_path = '/home/kymadogg/ros2_ws/src/mqp/pushback_sim/models/blue-sphere/model.sdf'
             self.blue_blocks_left = self.blue_blocks_left - 1
+            self.get_logger().info(f"Blue blocks left: {self.blue_blocks_left}")
         
         # full_path = os.path.join(self.package_path, model_pkg_path)
         ball.sdf_filename = model_pkg_path
@@ -247,10 +304,10 @@ class WorldServices(Node):
         self.spawn_ball.call_async(spawn_req)
         return True
 
-    def delete_block(self, msg): # msg = ball id
+    def delete_block(self, entity_id): # msg = ball id
         '''DeleteEntity wrapper function for deleting a block'''
         ball = Entity()
-        ball.id = msg # copy id of picked up ball to entity
+        ball.id = int(entity_id)  # copy id of picked up ball to entity
         delete_req = DeleteEntity.Request()
         delete_req.entity = ball
         self.remove_ball.call_async(delete_req)
