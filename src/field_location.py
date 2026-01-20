@@ -41,16 +41,23 @@ class FieldLocation(Node):
         self.tol = (0.2, 0.2, 0.1)
         self.z_tol = 0.01
 
+        # controller debounce
+        self.prev_button_0 = 0
+        self.prev_button_1 = 0
+
     def controller_callback(self, msg:Joy):
         '''handle controller input'''
         # check controller input for the intake / scoring buttons being pressed
 
-        if msg.buttons[0] == 1: # ball out
+        if msg.buttons[0] == 1 and self.prev_button_0 == 0: # ball out
             location = self.check_location()
             self.get_logger().info(f'Otto is at goal ID: {location}')
-        elif msg.buttons[1] == 1: # activate intake
-            # intake service (eventually)
+        elif msg.buttons[1] == 1 and self.prev_button_1 == 0: # activate intake
+            #
             self.check_collision()
+
+        self.prev_button_0 = msg.buttons[0]
+        self.prev_button_1 = msg.buttons[1]
 
     def robot_pose_callback(self, msg:PoseArray):
         '''record the current pose of the robot'''

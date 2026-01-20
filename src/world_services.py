@@ -22,7 +22,7 @@ class WorldServices(Node):
         # self.package_path =  self.get_parameter('pkg_path').get_parameter_value().string_value
 
         # subscribe to goal contents
-        self.create_subscription(GoalState, '/goals', self.save_goal_state) # might upgrade message to "worldState" to include loaders
+        self.create_subscription(GoalState, '/goals', self.save_goal_state, 10) # might upgrade message to "worldState" to include loaders
 
         # subscribe to loader contents (eventually...)
 
@@ -36,7 +36,7 @@ class WorldServices(Node):
         self.spawn_ball = self.create_client(SpawnEntity, '/world/pushback/create')
 
         # world and robot state variables
-        self.robot_hopper_contents = []
+        self.robot_intake = []
         self.blue_blocks_left = 12
         self.red_blocks_left = 12
 
@@ -65,7 +65,6 @@ class WorldServices(Node):
             3 : [12, 22, 32, 42] # tall
         }
 
-        self.
 
     def save_goal_state(self, msg:GoalState):
         self.goal_state = msg
@@ -73,13 +72,15 @@ class WorldServices(Node):
     # ----------------- IntakeBall Service Functions -------------------- # 
     def intake_ball(self, request, response): # service
         ''' Intake ball service callback function'''
-        if len(self.robot_intake_status) < 12: # if under max capacity
+        if len(self.robot_intake) < 12: # if under max capacity
             self.delete_block(request.ball_id)  
             self.robot_intake.append(request.color)
+            self.get_logger().info(f'robot intake status: {self.robot_intake}')
             response.success = True
             return response
         else:
             self.get_logger().info("Hopper full")
+            self.get_logger().info(f'robot intake status: {self.robot_intake}')
             response.success = False
             return response
 

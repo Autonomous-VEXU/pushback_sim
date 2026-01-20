@@ -66,7 +66,7 @@ def generate_launch_description():
     return LaunchDescription([
         world, 
         otto, 
-        # teleop,
+        teleop,
         object_poses,
         delete_object_bridge,
         world_services,
