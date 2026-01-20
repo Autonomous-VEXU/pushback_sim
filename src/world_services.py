@@ -2,6 +2,7 @@
 import rclpy
 import numpy as np
 import os
+import random
 
 from rclpy.node import Node
 from geometry_msgs.msg import PoseArray, Point
@@ -23,6 +24,9 @@ class WorldServices(Node):
 
         # subscribe to goal contents
         self.create_subscription(GoalState, '/goals', self.save_goal_state, 10) # might upgrade message to "worldState" to include loaders
+
+        # subscribe to otto's location
+        self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
 
         # my services
         self.output_ball = self.create_service(OutputBall, '/score_ball', self.output_ball)
@@ -65,6 +69,26 @@ class WorldServices(Node):
 
     def save_goal_state(self, msg:GoalState):
         self.goal_state = msg
+    
+    def robot_pose_callback(self, msg:PoseArray):
+        '''record the current pose of the robot'''
+        self.robot_x = msg.poses[-1].position.x
+        self.robot_y = msg.poses[-1].position.y
+
+        quat = msg.poses[-1].orientation
+        quat_array = np.array([quat.x, quat.y, quat.z, quat.w])
+
+        # normalize
+        quat_norm = np.linalg.norm(quat_array)
+        if quat_norm > 0: 
+            quat_normalized = quat_array / quat_norm
+        else:
+            quat_normalized = quat_array 
+            
+        rotation = R.from_quat(quat_normalized)
+
+        euler = rotation.as_euler('xyz') # THIS IS IN RADIANS!
+        self.robot_r = euler[2] # get the yaw (z rotation) value from the returned array
 
     # ----------------- IntakeBall Service Functions -------------------- # 
     def intake_ball(self, request, response): # service
@@ -112,7 +136,11 @@ class WorldServices(Node):
 
     def drop_ball(self, ball_color:int):
         '''handles if the robot has blocks but is not in a scoring location'''
-        self.spawn_block(ball_color, 0.0, 0.0, 0.8)
+        drop_x = self.robot_x + random.uniform(-0.3, 0.3) 
+        drop_y = self.robot_y + random.uniform(-0.3, 0.3)
+
+        self.spawn_block(ball_color, drop_x, drop_y, 0.4)
+        
         self.get_logger().info("dropped ball!")
         
     def score_goal(self, goal_id, color):
@@ -198,7 +226,6 @@ class WorldServices(Node):
         return response
 
     # ----------------- Helper Functions -------------------- # 
-
     def spawn_block(self, color:int, x:float, y:float, z:float):
         ball = EntityFactory()
         ball.allow_renaming = True
