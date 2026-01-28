@@ -51,14 +51,14 @@ class WorldServices(Node):
         self.red_blocks_left = 12
 
         self.goal_1_4 = Goal(
-            capacity = 16,
+            capacity = 15,
             endpoints = [12, 42],
             contents = deque(maxlen=16),
             height = 0.39
         )
 
         self.goal_2_3 = Goal(
-            capacity = 16,
+            capacity = 15,
             endpoints = [22, 32],
             contents = deque(maxlen=16),
             height = 0.39
@@ -67,14 +67,14 @@ class WorldServices(Node):
         self.center_mid = Goal(
             capacity = 6,
             endpoints = [11, 31],
-            contents = deque(maxlen=6),
+            contents = deque(maxlen=7),
             height = 0.27
         )
 
         self.center_low = Goal(
             capacity = 6,
             endpoints = [21, 41],
-            contents = deque(maxlen=6),
+            contents = deque(maxlen=7),
             height = 0.06
         )
 
@@ -98,7 +98,7 @@ class WorldServices(Node):
         }
 
         self.goal_heights = {
-            1 : [21, 41], # low (doubel check this later)
+            1 : [21, 41], # low (double check this later)
             2 : [11, 31], # medium
             3 : [12, 22, 32, 42] # tall
         }
@@ -126,8 +126,8 @@ class WorldServices(Node):
         euler = rotation.as_euler('xyz') # THIS IS IN RADIANS!
         self.robot_r = euler[2] # get the yaw (z rotation) value from the returned array
 
-    # ----------------- IntakeBall Service Functions -------------------- # 
-    def intake_ball(self, request, response): # service
+    # IntakeBall Service callback + functionality
+    def intake_ball(self, request, response): 
         ''' Intake ball service callback function'''
         if len(self.robot_intake) < 12: # if under max capacity
             self.delete_block(request.ball_id)  
@@ -141,9 +141,9 @@ class WorldServices(Node):
             response.success = False
             return response
 
-    # ----------------- OutputBall Service Functions -------------------- # 
+    # OutputBall Service callback + fucntionality 
     def output_ball(self, request, response):
-        ''' meta function that determines what action should occur with the ball being output based on 
+        '''meta function that determines what action should occur with the ball being output based on 
             current location, height attempted, and robot hopper status'''
 
         if len(self.robot_intake) == 0: # no blocks in hopper edge case
@@ -171,7 +171,7 @@ class WorldServices(Node):
         return response
 
     def drop_ball(self, ball_color:int):
-        '''handles if the robot has blocks but is not in a scoring location'''
+        '''handles if the robot has blocks but is not in a scoring location or wrong height is called'''
         drop_x = self.robot_x + random.uniform(-0.3, 0.3) 
         drop_y = self.robot_y + random.uniform(-0.3, 0.3)
 
@@ -214,14 +214,11 @@ class WorldServices(Node):
         points = self.get_intermediate_points(  
             self.goal_locations[goal.endpoints[0]][:2],  # (x, y) from first endpoint
             self.goal_locations[goal.endpoints[1]][:2],  # (x, y) from second endpoint
-            len(goal.contents))
+            goal.capacity 
+        )
         
         for (x,y), color in zip(points, goal.contents):
             self.spawn_block(color, x, y, goal.height)
-
-    # def add_overflow_block(self):
-
-    #     pass
 
     def clear_goal(self, goal_id:int):
         '''remove all of the blocks from a goal'''
@@ -282,7 +279,7 @@ class WorldServices(Node):
         response.success = True
         return response
 
-    # ----------------- Helper Functions -------------------- # 
+    # Helper fucntions (entities)
     def spawn_block(self, color:int, x:float, y:float, z:float):
         ball = EntityFactory()
         ball.allow_renaming = True
