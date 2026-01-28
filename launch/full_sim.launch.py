@@ -29,17 +29,37 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py'))
     )
 
+    # bridge services
+    delete_object_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='entity_services_bridge',
+        arguments=[
+            '/world/pushback/remove@ros_gz_interfaces/srv/DeleteEntity',
+            '/world/pushback/create@ros_gz_interfaces/srv/SpawnEntity'
+        ],
+        parameters=[{'use_sim_time': True}],
+        output='screen'
+    ) 
+
     # pose bridge
     object_poses = Node(
         package='pushback_sim',
-        executable='pose_bridge.py',
-        output='screen'
+        executable='pose_bridge.py'
+        # output='screen'
     )
 
     # scoring
     scoring = Node(
         package='pushback_sim',
-        executable='scoring.py',
+        executable='field_location.py',
+        output='screen'
+    )
+
+    # scoring
+    world_services = Node(
+        package='pushback_sim',
+        executable='world_services.py',
         output='screen'
     )
 
@@ -48,5 +68,7 @@ def generate_launch_description():
         otto, 
         teleop,
         object_poses,
+        delete_object_bridge,
+        world_services,
         scoring
     ])

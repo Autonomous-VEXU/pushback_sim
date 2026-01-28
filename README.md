@@ -69,14 +69,8 @@ models/
 ### `pose_bridge.py`
 Purpose of this node is to listen to the gazebo topic `/world/default/dynamic_pose/info`, parse the data (JSON) reformat it to include the name of the model and its ID number and republishes it on the `/object_locations` topic.
 
-### `scoring.py`
-This node has a few functions:
-- Validates picking up blocks by comparing the robot pose to all the blocks that are available to be picked up (on the floor)
-- Compares robot pose to a required pose needed to score. Also assigns ID numbers to all of the actionable locations (goals, loaders, park zones)
-
-coming soon:
-- calls services to update intake status and goal status
-- calls services to add blocks to the loaders
+### `world_services.py`
+Exposes a few intermediate level services for adding things to loaders, intaking a ball, and outputting a ball (determines if ball falls on the ground or is scored)
 
 ## Rolling Friction Plugin Setup 
 Both the blue and red spheres use a gazebo plugin called `rolling_friction::RollingFrictionPlugin` the plugin + install instructions can be found here: [kmhswimgirl/gz_rolling_friction](https://github.com/kmhswimgirl/gz_rolling_friction/tree/main)
