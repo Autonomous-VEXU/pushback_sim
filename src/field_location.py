@@ -262,6 +262,7 @@ class FieldLocation(Node):
         return 0
     
     def scoring_callback(self, height):
+        '''callback for the scoring function'''
         location = self.check_location()
         self.get_logger().info(f'Otto is at goal ID: {location}')
 

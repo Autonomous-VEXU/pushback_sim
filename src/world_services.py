@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 import rclpy
 import numpy as np
-import os
 import random
 
 from rclpy.node import Node
-from geometry_msgs.msg import PoseArray, Point
+from geometry_msgs.msg import PoseArray
 from scipy.spatial.transform import Rotation as R
-from std_msgs.msg import Float64MultiArray
-from pushback_sim.msg import Ball, BallArray, GoalState
+from pushback_sim.msg import Ball, GoalState
 from pushback_sim.srv import OutputBall, Loader, IntakeBall
 from typing import Tuple, List
 from collections import deque
@@ -27,17 +25,6 @@ class Goal:
 class WorldServices(Node):
     def __init__(self):
         super().__init__('world_services')
-        # load params from yaml file (eventually... )
-        # self.package_path =  self.get_parameter('pkg_path').get_parameter_value().string_value
-
-        # NOTE: params i need to add:
-            # ball entity sdf root path
-            # capacity goal distance (amount ball is pushed out)
-            # robot intake capacity
-            # blue blocks left
-            # red blocks left
-            # ball drop radius
-            # loader max capacity
 
         # NOTE: red = 1, blue = 2!
 
@@ -116,6 +103,7 @@ class WorldServices(Node):
         }
 
     def save_goal_state(self, msg:GoalState):
+        '''saves the world state'''
         self.goal_state = msg
     
     def robot_pose_callback(self, msg:PoseArray):
@@ -229,7 +217,6 @@ class WorldServices(Node):
             '''helper for calculating the spawn point for each goal when its capacity is reached'''
             x, y, z = input_coords
             tol = 0.08
-            # tol_r2 = 0.0567
 
             if goal.height == 0.39: # long goals
                 if left:  y = y + tol # eventually will be a parameter...
@@ -313,11 +300,10 @@ class WorldServices(Node):
                 response.success = False 
                 self.get_logger().info(f"NO BLUE BLOCKS LEFT!!!")
                 return response
-            model_pkg_path = '/home/kymadogg/ros2_ws/src/mqp/pushback_sim/models/blue-sphere/model.sdf' # make sure to make this a parameter!
+            model_pkg_path = '/home/kymadogg/ros2_ws/src/mqp/pushback_sim/models/blue-sphere/model.sdf'
             self.blue_blocks_left = self.blue_blocks_left - 1
             self.get_logger().info(f"Blue blocks left: {self.blue_blocks_left}")
         
-        # full_path = os.path.join(self.package_path, model_pkg_path)
         ball.sdf_filename = model_pkg_path
         loader_pose = self.loader_locations[request.loader_id]
         ball.pose.position.x = loader_pose[0]
@@ -335,6 +321,7 @@ class WorldServices(Node):
 
     # Helper functions (entities)
     def spawn_block(self, color:int, x:float, y:float, z:float):
+        '''SpawnEntity wrapper function for spawning in a block'''
         ball = EntityFactory()
         ball.allow_renaming = True
 
@@ -372,6 +359,7 @@ class WorldServices(Node):
             return 2
 
     def get_intermediate_points(self, p1, p2, num_points):
+        '''how i find the locations of each ball'''
         if num_points < 2:
             return [p1, p2] if p1 != p2 else [p1]
             
