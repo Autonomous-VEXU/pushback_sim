@@ -11,8 +11,7 @@ from pushback_sim.msg import Ball, BallArray, GoalState
 from typing import Tuple
 from pushback_sim.srv import IntakeBall, OutputBall
 
-# from ros_gz_interfaces.srv import DeleteEntity
-# from ros_gz_interfaces.msg import Entity
+# NOTE: Might want to consider moving the location checking to world_services. Also might want to split the controller callbacks to another node...
 
 class FieldLocation(Node):
     def __init__(self):
@@ -43,6 +42,7 @@ class FieldLocation(Node):
         self.prev_button_0 = 0
         self.prev_button_1 = 0
         self.prev_button_2 = 0 
+        self.prev_button_3 = 0
 
     def controller_callback(self, msg:Joy):
         '''handle controller input'''
@@ -54,10 +54,13 @@ class FieldLocation(Node):
             self.check_collision()
         elif msg.buttons[2] ==1 and self.prev_button_2 == 0: # output high
             self.scoring_callback(3)
+        elif msg.buttons[3] == 1 and self.prev_button_3 == 0: # output low
+            self.scoring_callback(1)
 
         self.prev_button_0 = msg.buttons[0]
         self.prev_button_1 = msg.buttons[1]
         self.prev_button_2 = msg.buttons[2]
+        self.prev_button_3 = msg.buttons[3]
 
     def robot_pose_callback(self, msg:PoseArray):
         '''record the current pose of the robot'''
@@ -113,14 +116,14 @@ class FieldLocation(Node):
         for ball in msg.object_array: 
             ball_xy = (ball.location.x, ball.location.y)
             if ball.location.z > 0.38: # long goals
-                if self.in_bounds(ball_xy, (1.20, 0), (0.04, 0.6)): # if in goal_1_4
+                if self.in_bounds(ball_xy, (1.20, 0), (0.06, 0.7)): # if in goal_1_4
                     long_1_4.append(ball)
-                elif self.in_bounds(ball_xy, (-1.20, 0), (0.04, 0.6)): # if in goal_2_3
+                elif self.in_bounds(ball_xy, (-1.20, 0), (0.06, 0.7)): # if in goal_2_3
                     long_2_3.append(ball)
-            elif self.in_bounds(ball_xy, (0.0, 0.0), (0.15, 0.15)): # center goals
-                if 0.25 < ball.location.z < 0.30 and dist_from_line((0.15, 0.15), (-0.15, -0.15), ball_xy) < 0.03: # top center goal
+            elif self.in_bounds(ball_xy, (0.0, 0.0), (0.20, 0.20)): # center goals
+                if 0.20 < ball.location.z < 0.31 and dist_from_line((0.15, 0.15), (-0.15, -0.15), ball_xy) < 0.05: # top center goal
                     center_high.append(ball)
-                elif 0.05 < ball.location.z < 0.10 and dist_from_line((-0.15, 0.15), (0.15, -0.15), ball_xy) < 0.03: # lower center goal
+                elif 0.05 < ball.location.z < 0.10 and dist_from_line((-0.15, 0.15), (0.15, -0.15), ball_xy) < 0.05: # lower center goal
                     center_low.append(ball)
             else:
                 continue
@@ -259,6 +262,7 @@ class FieldLocation(Node):
         return 0
     
     def scoring_callback(self, height):
+        '''callback for the scoring function'''
         location = self.check_location()
         self.get_logger().info(f'Otto is at goal ID: {location}')
 

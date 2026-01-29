@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 import rclpy
 import numpy as np
-import os
 import random
 
 from rclpy.node import Node
-from geometry_msgs.msg import PoseArray, Point
+from geometry_msgs.msg import PoseArray
 from scipy.spatial.transform import Rotation as R
-from std_msgs.msg import Float64MultiArray
-from pushback_sim.msg import Ball, BallArray, GoalState
+from pushback_sim.msg import Ball, GoalState
 from pushback_sim.srv import OutputBall, Loader, IntakeBall
 from typing import Tuple, List
 from collections import deque
@@ -27,8 +25,8 @@ class Goal:
 class WorldServices(Node):
     def __init__(self):
         super().__init__('world_services')
-        # load params from yaml file (eventually... )
-        # self.package_path =  self.get_parameter('pkg_path').get_parameter_value().string_value
+
+        # NOTE: red = 1, blue = 2!
 
         # subscribe to goal contents
         self.create_subscription(GoalState, '/goals', self.save_goal_state, 10) # might upgrade message to "worldState" to include loaders
@@ -50,8 +48,9 @@ class WorldServices(Node):
         self.blue_blocks_left = 12
         self.red_blocks_left = 12
 
+        # goals represented as custom data types
         self.goal_1_4 = Goal(
-            capacity = 15,
+            capacity = 15, # make a param
             endpoints = [12, 42],
             contents = deque(maxlen=16),
             height = 0.39
@@ -78,7 +77,7 @@ class WorldServices(Node):
             height = 0.06
         )
 
-        # my global values
+        # locations
         self.goal_locations = {
             11: (0.15, 0.15, 0.27),
             12: (1.20, 0.57, 0.39),
@@ -98,12 +97,13 @@ class WorldServices(Node):
         }
 
         self.goal_heights = {
-            1 : [21, 41], # low (double check this later)
+            1 : [21, 41], # low
             2 : [11, 31], # medium
             3 : [12, 22, 32, 42] # tall
         }
 
     def save_goal_state(self, msg:GoalState):
+        '''saves the world state'''
         self.goal_state = msg
     
     def robot_pose_callback(self, msg:PoseArray):
@@ -180,42 +180,78 @@ class WorldServices(Node):
         self.get_logger().info("dropped ball!")
         
     def score_goal(self, goal_id:int, color:int):
+        '''logic that is executed when a goal is scored on'''
 
         self.clear_goal(goal_id)
-
+        
         match goal_id:
             case 11:
-                self.center_mid.contents.append(color)
-                self.update_goal_entities(self.center_mid, color)
+                self.center_mid.contents.appendleft(color)
+                self.update_goal_entities(self.center_mid, color, True)
             case 21:
-                self.center_low.contents.append(color)
-                self.update_goal_entities(self.center_low, color)
+                self.center_low.contents.appendleft(color)
+                self.update_goal_entities(self.center_low, color, True)
             case 31:
                 self.center_mid.contents.append(color)
-                self.update_goal_entities(self.center_mid, color)
+                self.update_goal_entities(self.center_mid, color, False)
             case 41:
                 self.center_low.contents.append(color)
-                self.update_goal_entities(self.center_low, color)
+                self.update_goal_entities(self.center_low, color, False)
             case 12:
                 self.goal_1_4.contents.appendleft(color)
-                self.update_goal_entities(self.goal_1_4, color)
+                self.update_goal_entities(self.goal_1_4, color, True)
             case 22:
-                self.goal_2_3.contents.append(color)
-                self.update_goal_entities(self.goal_2_3, color)
+                self.goal_2_3.contents.appendleft(color)
+                self.update_goal_entities(self.goal_2_3, color, True)
             case 32:
                 self.goal_2_3.contents.append(color)
-                self.update_goal_entities(self.goal_2_3, color)
+                self.update_goal_entities(self.goal_2_3, color, False)
             case 42:
                 self.goal_1_4.contents.append(color)
-                self.update_goal_entities(self.goal_1_4, color)
+                self.update_goal_entities(self.goal_1_4, color, False)
             
-    def update_goal_entities(self, goal:Goal, color):
+    def update_goal_entities(self, goal:Goal, color:int, left:bool):
+        '''updates the goal entity that was just scored on'''
+
+        def calc_goal_shift(goal:Goal, input_coords:Tuple[int], left: bool):
+            '''helper for calculating the spawn point for each goal when its capacity is reached'''
+            x, y, z = input_coords
+            tol = 0.08
+
+            if goal.height == 0.39: # long goals
+                if left:  y = y + tol # eventually will be a parameter...
+                else: y = y - tol
+            
+            elif goal.height == 0.27: # top center
+               if left: x, y = x + tol, y + tol
+               else: x, y = x - tol, y - tol
+
+            elif goal.height == 0.06: # lower center
+                if left: x, y = x - tol, y + tol
+                else: x, y = x + tol, y - tol
+
+            return x, y, z
+
+        if len(goal.contents) == goal.capacity + 1: # max deque capacity is goal capacity + 1 to prevent data loss
+            if left:
+                dropped_ball = goal.contents.pop() # if scoring left, want to pop right
+                x, y, z = self.goal_locations[goal.endpoints[1]] # want the opposite endpoint from the scoring one
+                x, y, z = calc_goal_shift(goal, (x, y, z), False)
+                self.spawn_block(dropped_ball, x, y, z)
+                
+            else:
+                dropped_ball = goal.contents.popleft()
+                x, y, z = self.goal_locations[goal.endpoints[0]]
+                x, y, z = calc_goal_shift(goal, (x, y, z), True)
+                self.spawn_block(dropped_ball, x, y, z)
 
         points = self.get_intermediate_points(  
             self.goal_locations[goal.endpoints[0]][:2],  # (x, y) from first endpoint
             self.goal_locations[goal.endpoints[1]][:2],  # (x, y) from second endpoint
             goal.capacity 
         )
+
+        self.get_logger().info(f"Goal contents: {goal.contents}")
         
         for (x,y), color in zip(points, goal.contents):
             self.spawn_block(color, x, y, goal.height)
@@ -225,17 +261,20 @@ class WorldServices(Node):
         if goal_id == 22 or goal_id == 32: # long goal b
             for block in self.goal_state.long_b.object_array:
                self.delete_block(block.id)
+            
         elif goal_id == 42 or goal_id == 12: # long goal a
             for block in self.goal_state.long_a.object_array:
                self.delete_block(block.id)
-        elif goal_id == 11 or goal_id == 31: # center low
-            for block in self.goal_state.center_low.object_array:
-               self.delete_block(block.id)
-        elif goal_id == 21 or goal_id == 41: # center high
+
+        elif goal_id == 11 or goal_id == 31: # center high
             for block in self.goal_state.center_high.object_array:
                self.delete_block(block.id)
+
+        elif goal_id == 21 or goal_id == 41: # center low
+            for block in self.goal_state.center_low.object_array:
+               self.delete_block(block.id)
     
-    # ----------------- Loader Service Functions -------------------- # 
+    # Loader service functions
     def add_to_loader(self, request:Loader.Request, response):
         '''spawn ball slightly above loader'''
 
@@ -249,21 +288,22 @@ class WorldServices(Node):
 
         if request.color == 1:
             if self.red_blocks_left == 0:
-                response.success = False # maybe add log statement to say there are no blocks left?
+                response.success = False 
+                self.get_logger().info(f"NO RED BLOCKS LEFT!!!")
                 return response
-            model_pkg_path = '/home/kymadogg/ros2_ws/src/mqp/pushback_sim/models/red-sphere/model.sdf'
+            model_pkg_path = '/home/kymadogg/ros2_ws/src/mqp/pushback_sim/models/red-sphere/model.sdf' # make sure to make this a parameter!
             self.red_blocks_left = self.red_blocks_left - 1
             self.get_logger().info(f"Red blocks left: {self.red_blocks_left}")
 
         if request.color == 2:
             if self.blue_blocks_left == 0:
-                response.success = False # maybe add log statement to say there are no blocks left?
+                response.success = False 
+                self.get_logger().info(f"NO BLUE BLOCKS LEFT!!!")
                 return response
             model_pkg_path = '/home/kymadogg/ros2_ws/src/mqp/pushback_sim/models/blue-sphere/model.sdf'
             self.blue_blocks_left = self.blue_blocks_left - 1
             self.get_logger().info(f"Blue blocks left: {self.blue_blocks_left}")
         
-        # full_path = os.path.join(self.package_path, model_pkg_path)
         ball.sdf_filename = model_pkg_path
         loader_pose = self.loader_locations[request.loader_id]
         ball.pose.position.x = loader_pose[0]
@@ -279,8 +319,9 @@ class WorldServices(Node):
         response.success = True
         return response
 
-    # Helper fucntions (entities)
+    # Helper functions (entities)
     def spawn_block(self, color:int, x:float, y:float, z:float):
+        '''SpawnEntity wrapper function for spawning in a block'''
         ball = EntityFactory()
         ball.allow_renaming = True
 
@@ -318,6 +359,7 @@ class WorldServices(Node):
             return 2
 
     def get_intermediate_points(self, p1, p2, num_points):
+        '''how i find the locations of each ball'''
         if num_points < 2:
             return [p1, p2] if p1 != p2 else [p1]
             
