@@ -195,7 +195,7 @@ class WorldServices(Node):
         '''logic that is executed when a goal is scored on'''
 
         self.clear_goal(goal_id)
-
+        
         match goal_id:
             case 11:
                 self.center_mid.contents.appendleft(color)
@@ -229,29 +229,30 @@ class WorldServices(Node):
             '''helper for calculating the spawn point for each goal when its capacity is reached'''
             x, y, z = input_coords
             tol = 0.08
-            tol_r2 = 0.0567
+            # tol_r2 = 0.0567
 
             if goal.height == 0.39: # long goals
                 if left:  y = y - tol # eventually will be a parameter...
                 else: y = y + tol
             
-            elif goal.height == 0.27:
-               if left: x, y = x + tol_r2, y + tol_r2
-               else: x, y = x - tol_r2, y - tol_r2
+            elif goal.height == 0.27: # top center
+               if left: x, y = x + tol, y + tol
+               else: x, y = x - tol, y - tol
 
-            elif goal.height == 0.06: 
-                if left: x, y = x - tol_r2, y + tol_r2
-                else: x, y = x + tol_r2, y - tol_r2
+            elif goal.height == 0.06: # lower center
+                if left: x, y = x - tol, y + tol
+                else: x, y = x + tol, y - tol
             return x, y, z
 
         if len(goal.contents) == goal.capacity + 1: # max deque capacity is goal capacity + 1 to prevent data loss
             if left:
-                dropped_ball = goal.contents.popleft()
+                dropped_ball = goal.contents.pop() # if scoring left, want to pop right
                 x, y, z = self.goal_locations[goal.endpoints[1]] # want the opposite endpoint from the scoring one
                 x, y, z = calc_goal_shift(goal, (x, y, z), True)
                 self.spawn_block(dropped_ball, x, y, z)
+                
             else:
-                dropped_ball = goal.contents.pop()
+                dropped_ball = goal.contents.popleft()
                 x, y, z = self.goal_locations[goal.endpoints[0]]
                 x, y, z = calc_goal_shift(goal, (x, y, z), False)
                 self.spawn_block(dropped_ball, x, y, z)
@@ -261,6 +262,8 @@ class WorldServices(Node):
             self.goal_locations[goal.endpoints[1]][:2],  # (x, y) from second endpoint
             goal.capacity 
         )
+
+        self.get_logger().info(f"Goal contents: {goal.contents}")
         
         for (x,y), color in zip(points, goal.contents):
             self.spawn_block(color, x, y, goal.height)
@@ -270,14 +273,17 @@ class WorldServices(Node):
         if goal_id == 22 or goal_id == 32: # long goal b
             for block in self.goal_state.long_b.object_array:
                self.delete_block(block.id)
+            
         elif goal_id == 42 or goal_id == 12: # long goal a
             for block in self.goal_state.long_a.object_array:
                self.delete_block(block.id)
-        elif goal_id == 11 or goal_id == 31: # center low
-            for block in self.goal_state.center_low.object_array:
-               self.delete_block(block.id)
-        elif goal_id == 21 or goal_id == 41: # center high
+
+        elif goal_id == 11 or goal_id == 31: # center high
             for block in self.goal_state.center_high.object_array:
+               self.delete_block(block.id)
+
+        elif goal_id == 21 or goal_id == 41: # center low
+            for block in self.goal_state.center_low.object_array:
                self.delete_block(block.id)
     
     # Loader service functions
