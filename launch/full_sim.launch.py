@@ -50,13 +50,13 @@ def generate_launch_description():
     )
 
     # scoring
-    scoring = Node(
+    locator = Node(
         package='pushback_sim',
         executable='field_location.py',
         output='screen'
     )
 
-    # scoring
+    # world services endpoint
     world_services = Node(
         package='pushback_sim',
         executable='world_services.py',
@@ -70,5 +70,5 @@ def generate_launch_description():
         object_poses,
         delete_object_bridge,
         world_services,
-        scoring
+        locator
     ])
