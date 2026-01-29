@@ -232,8 +232,8 @@ class WorldServices(Node):
             # tol_r2 = 0.0567
 
             if goal.height == 0.39: # long goals
-                if left:  y = y - tol # eventually will be a parameter...
-                else: y = y + tol
+                if left:  y = y + tol # eventually will be a parameter...
+                else: y = y - tol
             
             elif goal.height == 0.27: # top center
                if left: x, y = x + tol, y + tol
@@ -242,19 +242,20 @@ class WorldServices(Node):
             elif goal.height == 0.06: # lower center
                 if left: x, y = x - tol, y + tol
                 else: x, y = x + tol, y - tol
+
             return x, y, z
 
         if len(goal.contents) == goal.capacity + 1: # max deque capacity is goal capacity + 1 to prevent data loss
             if left:
                 dropped_ball = goal.contents.pop() # if scoring left, want to pop right
                 x, y, z = self.goal_locations[goal.endpoints[1]] # want the opposite endpoint from the scoring one
-                x, y, z = calc_goal_shift(goal, (x, y, z), True)
+                x, y, z = calc_goal_shift(goal, (x, y, z), False)
                 self.spawn_block(dropped_ball, x, y, z)
                 
             else:
                 dropped_ball = goal.contents.popleft()
                 x, y, z = self.goal_locations[goal.endpoints[0]]
-                x, y, z = calc_goal_shift(goal, (x, y, z), False)
+                x, y, z = calc_goal_shift(goal, (x, y, z), True)
                 self.spawn_block(dropped_ball, x, y, z)
 
         points = self.get_intermediate_points(  
