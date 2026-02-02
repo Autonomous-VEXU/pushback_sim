@@ -84,7 +84,7 @@ class FieldLocation(Node):
     
     def object_location_callback(self, msg:BallArray):
         '''read all of the objects published from the pose_bridge node and see if they are in a goal or not '''
-        self.objects=msg
+        self.objects = msg
 
         goal_state = GoalState()
         long_1_4 = []
