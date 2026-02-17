@@ -17,22 +17,23 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Ball.msg"
   "msg/BallArray.msg"
+  "msg/GoalState.msg"
+  "srv/OutputBall.srv"
+  "srv/IntakeBall.srv"
+  "srv/Loader.srv"
   DEPENDENCIES geometry_msgs
 )
 
 install(
-  DIRECTORY launch worlds models maps msg
+  DIRECTORY launch worlds models maps msg srv
   DESTINATION share/${PROJECT_NAME}
 )
 
-# install(
-#   DIRECTORY maps/
-#   DESTINATION share/${PROJECT_NAME}/maps
-# )
-
 install(PROGRAMS
-  src/scoring.py
+  src/field_location.py
   src/pose_bridge.py
+  src/intake.py
+  src/world_services.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

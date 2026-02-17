@@ -29,10 +29,22 @@ class PoseBridge(Node):
             self.get_logger().error(f"Command failed with return code {result.returncode}: {result.stderr}")
             return {"pose": []}
         try:
-            data = json.loads(result.stdout)
-            return data
-        except json.JSONDecodeError as e:
-            self.get_logger().error(f"JSON decode error: {e}, stdout: '{result.stdout}', stderr: '{result.stderr}'")
+            # only get ONE json item
+            lines = result.stdout.strip().split('\n')
+            for line in lines:
+                if line.strip():
+                    try:
+                        data = json.loads(line)
+                        return data  # first valid json
+                    except json.JSONDecodeError:
+                        continue  
+            
+            # error handling
+            self.get_logger().warning("No valid JSON found in output")
+            return {"pose": []}
+            
+        except Exception as e:
+            self.get_logger().error(f"Unexpected error: {e}, stdout: '{result.stdout}', stderr: '{result.stderr}'")
             return {"pose": []}
 
     def update_locations(self):
@@ -54,7 +66,7 @@ class PoseBridge(Node):
                     objects.object_array.append(ball)
     
         self.ball_locations.publish(objects)
-       
+
 def main(args=None):
     rclpy.init(args=args)
     node = PoseBridge()
@@ -62,8 +74,10 @@ def main(args=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
-    node.destroy_node()
-    rclpy.shutdown()
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
