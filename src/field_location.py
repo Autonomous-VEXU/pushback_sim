@@ -244,7 +244,6 @@ class FieldLocation(Node):
 
         # publish the loader message
         self.loaders.publish(loader_state)
-        
             
     def check_collision(self):
         '''did the robot collide with a ball or not'''

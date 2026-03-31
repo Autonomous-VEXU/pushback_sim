@@ -311,8 +311,8 @@ class WorldServices(Node):
             self.blue_blocks_left = self.blue_blocks_left - 1
             self.get_logger().info(f"Blue blocks left: {self.blue_blocks_left}")
         
-        else:
-            response = False
+        elif request.color != 1 or request.color != 2 :
+            response.success = False
             return response
         
         ball.sdf_filename = model_pkg_path
