@@ -49,7 +49,7 @@ def generate_launch_description():
         # output='screen'
     )
 
-    # scoring
+    # field locations
     locator = Node(
         package='pushback_sim',
         executable='field_location.py',
@@ -60,6 +60,13 @@ def generate_launch_description():
     world_services = Node(
         package='pushback_sim',
         executable='world_services.py',
+        output='screen'
+    )
+
+    # scoring the game
+    world_services = Node(
+        package='pushback_sim',
+        executable='scoring.py',
         output='screen'
     )
 

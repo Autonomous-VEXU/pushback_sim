@@ -34,6 +34,8 @@ class WorldServices(Node):
         # subscribe to otto's location
         self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
 
+        # publish intake status
+
         # my services
         self.output_ball = self.create_service(OutputBall, '/score_ball', self.output_ball)
         self.add_to_loader = self.create_service(Loader, '/loader', self.add_to_loader)
@@ -383,8 +385,10 @@ def main(args=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
-    node.destroy_node()
-    rclpy.shutdown()
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

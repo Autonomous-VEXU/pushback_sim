@@ -127,6 +127,54 @@ class FieldLocation(Node):
                     center_low.append(ball)
             else:
                 continue
+        
+        def calc_center_ctrl_zone(goal:BallArray):
+            '''
+            calculates which team gets a control zones bonus
+
+            0 = no control of the goal
+            1 = red controls the goal
+            2 = blue controls the goal
+            '''
+
+            if len(goal) == 0: # no blocks in goal
+                return 0
+            
+            for ball in goal:
+                red_ct, blue_ct = 0, 0
+                if ball.color == 1:
+                    red_ct += 1
+                elif ball.color == 2:
+                    blue_ct += 1
+            
+            if red_ct > blue_ct:
+                return 1
+            elif blue_ct > red_ct:
+                return 2
+            
+        # control zone centers/params
+        long_a_center = (1.20, 0.57)
+        long_b_center = (-1.20, -0.57)
+        ctrl_width = 0.294
+            
+        def is_in_long_ctrl_zone(ball, center, ctrl_width):
+            tol = ctrl_width / 2
+            return abs(ball.location.x - center[0]) < tol and abs(ball.location.y - center[1]) < tol
+
+        def calc_long_ctrl_zone(goal: BallArray, center):
+            red_ct, blue_ct = 0, 0
+            for ball in goal:
+                if is_in_long_ctrl_zone(ball, center, ctrl_width):
+                    if ball.color == 1:
+                        red_ct += 1
+                    elif ball.color == 2:
+                        blue_ct += 1
+            if red_ct > blue_ct:
+                return 1
+            elif blue_ct > red_ct:
+                return 2
+            else:
+                return 0
 
         # publish the updated GoalState message
         goal_state.center_low = BallArray()
@@ -140,6 +188,12 @@ class FieldLocation(Node):
         
         goal_state.long_b = BallArray()
         goal_state.long_b.object_array = long_2_3
+
+        # update control zone status
+        goal_state.center_low_ctrl = calc_center_ctrl_zone(center_low)
+        goal_state.center_high_ctrl = calc_center_ctrl_zone(center_high)
+        goal_state.long_a_ctrl = calc_long_ctrl_zone(long_1_4, long_a_center)
+        goal_state.long_b_ctrl = calc_long_ctrl_zone(long_2_3, long_b_center)
 
         self.goals.publish(goal_state)
             
@@ -279,8 +333,10 @@ def main(args=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
-    node.destroy_node()
-    rclpy.shutdown()
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
