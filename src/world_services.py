@@ -8,6 +8,7 @@ from geometry_msgs.msg import PoseArray
 from scipy.spatial.transform import Rotation as R
 from vex_interfaces.msg import Ball, GoalState 
 from vex_interfaces.srv import OutputBall, Loader, IntakeBall 
+from std_msgs.msg import Float64MultiArray
 from typing import Tuple, List
 from collections import deque
 from dataclasses import dataclass
@@ -34,8 +35,10 @@ class WorldServices(Node):
         # subscribe to otto's location
         self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
 
-        # publish intake status
-        self.intake_status = self.create_publisher()
+        # publish robot hopper contents
+        self.robot_blocks = self.create_publisher(Float64MultiArray, '/robot_blocks', 10)
+        self.create_timer(0.5, self.update_hopper_status)
+
         # my services
         self.output_ball = self.create_service(OutputBall, '/score_ball', self.output_ball)
         self.add_to_loader = self.create_service(Loader, '/loader', self.add_to_loader)
@@ -178,7 +181,6 @@ class WorldServices(Node):
         drop_y = self.robot_y + random.uniform(-0.3, 0.3)
 
         self.spawn_block(ball_color, drop_x, drop_y, 0.4)
-        
         self.get_logger().info("dropped ball!")
         
     def score_goal(self, goal_id:int, color:int):
@@ -276,14 +278,17 @@ class WorldServices(Node):
             for block in self.goal_state.center_low.object_array:
                self.delete_block(block.id)
     
+    def update_hopper_status(self):
+        '''update the status of the robot hopper'''
+        hopper_msg = Float64MultiArray()
+        hopper_msg.data = self.robot_intake
+        self.robot_blocks.publish(hopper_msg)
+
     # Loader service functions
     def add_to_loader(self, request:Loader.Request, response):
         '''spawn ball slightly above loader'''
 
-        # if len(loader.id.object_array) >= self.loader_capacity: <-- add in error handling later
-        # response.success = False
-        # print (loader {loader.id} full!)
-        # return response
+        # TODO: prevent service from spawning a ball if there are 6 on the loader already
 
         ball = EntityFactory()
         ball.allow_renaming = True

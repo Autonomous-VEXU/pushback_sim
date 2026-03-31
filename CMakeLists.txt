@@ -22,7 +22,6 @@ install(
 install(PROGRAMS
   src/field_location.py
   src/pose_bridge.py
-  src/intake.py
   src/world_services.py
   src/scoring.py
   src/strategy_ai_bridge.py

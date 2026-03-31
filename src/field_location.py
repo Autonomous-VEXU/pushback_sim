@@ -5,11 +5,12 @@ import numpy as np
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import PoseArray, Point
+from std_msgs.msg import Int64MultiArray
 from scipy.spatial.transform import Rotation as R
-from std_msgs.msg import Float64MultiArray
 from vex_interfaces.msg import Ball, BallArray, GoalState, LoaderState
 from typing import Tuple
 from vex_interfaces.srv import IntakeBall, OutputBall
+
 
 # NOTE: Might want to consider moving the location checking to world_services. Also might want to split the controller callbacks to another node...
 # NOTE: at some point i need to move all of the common locations into another class so that everything uses the same reference points
@@ -22,9 +23,6 @@ class FieldLocation(Node):
 
         # subscribe to pose_bridge.py's output topic
         self.create_subscription(BallArray, '/object_locations', self.object_location_callback, 10)
-
-        # debug topic that i should remove later
-        self.debug = self.create_publisher(Float64MultiArray, '/debug', 10)
 
         # publishers for entities in goals and loaders
         self.goals = self.create_publisher(GoalState, '/goals', 10)
@@ -195,6 +193,7 @@ class FieldLocation(Node):
             center_idx = quadrant - 1
             center = centers[center_idx]
             loader_balls = []
+            color_balls = []
 
             for ball in balls.object_array:
                 if self.in_bounds((ball.location.x, ball.location.y), center, tol):
@@ -203,7 +202,10 @@ class FieldLocation(Node):
             # sort by z height
             loader_balls.sort(key=lambda x: x.location.z)
 
-            return loader_balls
+            for ball in loader_balls:
+                color_balls.append(ball.color)
+
+            return color_balls
 
         # build the updated GoalState message
         goal_state.center_low = BallArray()
@@ -225,17 +227,17 @@ class FieldLocation(Node):
         goal_state.long_b_ctrl = calc_long_ctrl_zone(long_2_3, long_b_center)
 
         # build the LoaderState message
-        loader_state.loader_q1 = BallArray() 
-        loader_state.loader_q1.object_array = calc_loader_contents(1, msg)
+        loader_state.loader_q1 = Int64MultiArray() 
+        loader_state.loader_q1.data = calc_loader_contents(1, msg)
 
-        loader_state.loader_q2 = BallArray() 
-        loader_state.loader_q2.object_array = calc_loader_contents(2, msg)
+        loader_state.loader_q2 = Int64MultiArray() 
+        loader_state.loader_q2.data = calc_loader_contents(2, msg)
 
-        loader_state.loader_q3 = BallArray() 
-        loader_state.loader_q3.object_array = calc_loader_contents(3, msg)
+        loader_state.loader_q3 = Int64MultiArray() 
+        loader_state.loader_q3.data = calc_loader_contents(3, msg)
 
-        loader_state.loader_q4 = BallArray() 
-        loader_state.loader_q4.object_array = calc_loader_contents(4, msg)
+        loader_state.loader_q4 = Int64MultiArray() 
+        loader_state.loader_q4.data = calc_loader_contents(4, msg)
 
         # publish the goal message
         self.goals.publish(goal_state)
@@ -253,11 +255,6 @@ class FieldLocation(Node):
         
         x = h + offset * np.cos(th)
         y = k + offset * np.sin(th)
-
-        db = Float64MultiArray()
-        db.data = [x, y]
-        
-        self.debug.publish(db) # remove this later
 
         # validate ball location helper method
         def in_intake_zone(ref_x, ref_y, ball_pos: Point):
