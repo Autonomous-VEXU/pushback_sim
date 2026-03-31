@@ -7,9 +7,9 @@ from sensor_msgs.msg import Joy
 from geometry_msgs.msg import PoseArray, Point
 from scipy.spatial.transform import Rotation as R
 from std_msgs.msg import Float64MultiArray
-from pushback_sim.msg import Ball, BallArray, GoalState
+from vex_interfaces.msg import Ball, BallArray, GoalState#type:ignore
 from typing import Tuple
-from pushback_sim.srv import IntakeBall, OutputBall
+from vex_interfaces.srv import IntakeBall, OutputBall#type:ignore
 
 # NOTE: Might want to consider moving the location checking to world_services. Also might want to split the controller callbacks to another node...
 

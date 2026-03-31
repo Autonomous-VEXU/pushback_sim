@@ -6,8 +6,8 @@ import random
 from rclpy.node import Node
 from geometry_msgs.msg import PoseArray
 from scipy.spatial.transform import Rotation as R
-from pushback_sim.msg import Ball, GoalState
-from pushback_sim.srv import OutputBall, Loader, IntakeBall
+from vex_interfaces.msg import Ball, GoalState #type:ignore
+from vex_interfaces.srv import OutputBall, Loader, IntakeBall #type:ignore
 from typing import Tuple, List
 from collections import deque
 from dataclasses import dataclass

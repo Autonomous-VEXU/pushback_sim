@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 import rclpy
-import numpy as np
 
 from rclpy.node import Node
 from geometry_msgs.msg import PoseArray, Point
 from scipy.spatial.transform import Rotation as R
 from std_msgs.msg import Float64MultiArray
-from pushback_sim.msg import Ball, BallArray
+from vex_interfaces.msg import Ball, BallArray#type:ignore
 from typing import Tuple
 import queue
-from pushback_sim.srv import IntakeBall
+from vex_interfaces.srv import IntakeBall#type:ignore
 
 from ros_gz_interfaces.srv import DeleteEntity, SpawnEntity
 from ros_gz_interfaces.msg import Entity, EntityFactory
@@ -50,10 +49,6 @@ class RobotIntake(Node):
         # get latest ball by popping from the queue 
         ball = self.robot_intake.pop()
 
-        pass
-
-    def update_intake_gui(self, objects:BallArray):
-        '''update the matplot lib graphic for the intake'''
         pass
 
     def remove_ball(self, id:int):

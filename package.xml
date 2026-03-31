@@ -12,14 +12,14 @@
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <build_depend>geometry_msgs</build_depend>
-
-  <exec_depend>rosidl_default_runtime</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
-
-  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
+
+  <exec_depend>vex_interfaces</exec_depend>
+  <build_depend>vex_interfaces</build_depend>
+  <build_export_depend>vex_interfaces</build_export_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

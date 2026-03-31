@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from pushback_sim.msg import GoalState
+from vex_interfaces.msg import GoalState #type:ignore
 from std_msgs.msg import Int32MultiArray
 
 class Scoring(Node):
@@ -11,8 +11,9 @@ class Scoring(Node):
         self.create_subscription(GoalState, '/goals', self.score_goals)
 
         # publish score and opponent score
-        self.score = self.create_publisher(Int32MultiArray, '/current_score',)
+        self.score = self.create_publisher(Int32MultiArray, '/game_score', 10)
 
+    def goal_callback(self, msg:GoalState): pass
 
 def main(args=None):
     rclpy.init(args=args)

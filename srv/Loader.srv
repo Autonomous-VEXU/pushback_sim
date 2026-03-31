@@ -1,4 +1,0 @@
-int64 loader_id
-int64 color
----
-bool success
