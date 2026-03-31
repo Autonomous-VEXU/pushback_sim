@@ -3,14 +3,24 @@ import os
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition
 
 def generate_launch_description():
     # file + directory paths
     this_dir = get_package_share_directory('pushback_sim')
     otto_gz = get_package_share_directory('otto_gazebo')
     otto_br = get_package_share_directory('otto_bringup')
+
+    # strategy AI bridge launch arg
+    sai = LaunchConfiguration('strategy_ai')
+    sai_cmd = DeclareLaunchArgument(
+        'strategy_ai',
+        default_value='false',
+        description='conditionally launches the strategy AI bridge node'
+    ) 
    
     # world launch file
     world = IncludeLaunchDescription(
@@ -24,10 +34,10 @@ def generate_launch_description():
         launch_arguments={'x_pose': '0.5','y_pose': '0.0'}.items()
     )
 
-    # # enable teleop control
-    # teleop = IncludeLaunchDescription(
-    #     PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py'))
-    # )
+    # enable teleop control
+    teleop = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py'))
+    )
 
     # bridge services
     delete_object_bridge = Node(
@@ -64,18 +74,29 @@ def generate_launch_description():
     )
 
     # scoring the game
-    world_services = Node(
+    scoring = Node(
         package='pushback_sim',
         executable='scoring.py',
         output='screen'
     )
 
+    # strategy AI bridge
+    sai_node = Node(
+        package='pushback_sim',
+        executable='strategy_ai_bridge.py',
+        output='screen',
+        condition=IfCondition(sai)
+    )
+
     return LaunchDescription([
-        world, 
+        world,
+        sai_cmd, 
         otto, 
-        # teleop,
+        teleop,
         object_poses,
         delete_object_bridge,
+        scoring,
         world_services,
-        locator
+        locator,
+        sai_node
     ])

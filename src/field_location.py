@@ -12,6 +12,7 @@ from typing import Tuple
 from vex_interfaces.srv import IntakeBall, OutputBall#type:ignore
 
 # NOTE: Might want to consider moving the location checking to world_services. Also might want to split the controller callbacks to another node...
+# NOTE: at some point i need to move all of the common locations into another class so that everything uses the same reference points
 
 class FieldLocation(Node):
     def __init__(self):
@@ -153,8 +154,8 @@ class FieldLocation(Node):
                 return 2
             
         # control zone centers/params
-        long_a_center = (1.20, 0.57)
-        long_b_center = (-1.20, -0.57)
+        long_a_center = (1.20, 0.00)
+        long_b_center = (-1.20, 0.00)
         ctrl_width = 0.294
             
         def is_in_long_ctrl_zone(ball, center, ctrl_width):

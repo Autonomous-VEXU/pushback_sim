@@ -19,7 +19,7 @@ class Scoring(Node):
         super().__init__('scoring')
 
         # subscribe to all goal messages
-        self.create_subscription(GoalState, '/goals', self.score_calculator)
+        self.create_subscription(GoalState, '/goals', self.score_calculator, 10)
 
         # publish score and opponent score: [red_score, blue_score]
         self.score = self.create_publisher(Int64MultiArray, '/game_score', 10)  
@@ -27,7 +27,6 @@ class Scoring(Node):
         # globals for score tracking
         self.blue_score = None
         self.red_score = None
-
 
     def score_calculator(self, goals:GoalState):
         '''calculates the score of the game based on the number of blocks in each goal'''
@@ -40,31 +39,39 @@ class Scoring(Node):
 
         # adding up blocks in each goal (3 pts each)
         for goal in goal_raw:
-            for ball in goal:
+            for ball in goal.object_array:
                 if ball.color == 1:
-                    self.blue_score += 3
-                elif ball.color == 2:
                     self.red_score += 3
+                elif ball.color == 2:
+                    self.blue_score += 3
         
         # center low control bonus (6 pts)
         ctrl = goals.center_low_ctrl
-        if ctrl == 1 or ctrl == 2:
-            (self.red_score, self.blue_score)[ctrl - 1] += 6
+        if ctrl == 1:
+            self.red_score += 6
+        elif ctrl == 2:
+            self.blue_score += 6
 
         # center low control bonus (8 pts)
         ctrl = goals.center_high_ctrl
-        if ctrl == 1 or ctrl == 2:
-            (self.red_score, self.blue_score)[ctrl - 1] += 8
+        if ctrl == 1:
+            self.red_score += 8
+        elif ctrl == 2:
+            self.blue_score += 8
         
         # long goal A (10 pts)
         ctrl = goals.long_a_ctrl
-        if ctrl == 1 or ctrl == 2:
-            (self.red_score, self.blue_score)[ctrl - 1] += 10
+        if ctrl == 1:
+            self.red_score += 10
+        elif ctrl == 2:
+            self.blue_score += 10
         
         # long goal B (10 pts)
         ctrl = goals.long_b_ctrl
-        if ctrl == 1 or ctrl == 2:
-            (self.red_score, self.blue_score)[ctrl - 1] += 10
+        if ctrl == 1:
+            self.red_score += 10
+        elif ctrl == 2:
+            self.blue_score += 10
 
         score_array = Int64MultiArray()
         score_array.data = [self.red_score, self.blue_score]

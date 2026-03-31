@@ -66,16 +66,16 @@ class WorldServices(Node):
         )
 
         self.center_mid = Goal(
-            capacity = 6,
+            capacity = 7,
             endpoints = [11, 31],
-            contents = deque(maxlen=7),
+            contents = deque(maxlen=8),
             height = 0.27
         )
 
         self.center_low = Goal(
-            capacity = 6,
+            capacity = 7,
             endpoints = [21, 41],
-            contents = deque(maxlen=7),
+            contents = deque(maxlen=8),
             height = 0.06
         )
 

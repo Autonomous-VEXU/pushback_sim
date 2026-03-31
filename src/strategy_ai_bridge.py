@@ -9,9 +9,9 @@ class StrategyAIBridge(Node):
         super().__init__('sai_bridge')
 
         # subscribe to score, robot pose, objects, goal states, etc
-        self.create_subscription(Int32MultiArray, '/game_score', self.score_cb)
-        self.create_subscription(BallArray, '/object_locations/field', self.field_blocks_cb)
-        self.create_subscription(GoalState, '/goals', self.goal_cb)
+        self.create_subscription(Int32MultiArray, '/game_score', self.score_cb, 10)
+        self.create_subscription(BallArray, '/object_locations/field', self.field_blocks_cb, 10)
+        self.create_subscription(GoalState, '/goals', self.goal_cb, 10)
         self.create_subscription(ControlZone, '/control_zone', self.ctrl_zone_cb)
         self.create_subscription(PoseArray,'/otto_pose', self.robot_pose_cb)
         self.create_subscription(BallArray, '/robot_intake_status', self.intake_cb)
@@ -24,6 +24,7 @@ class StrategyAIBridge(Node):
 
         # globals for storing current state
         self.world_state = WorldState()
+        
     
     def score_cb(self, msg): 
         self.world_state.score = msg
@@ -45,10 +46,6 @@ class StrategyAIBridge(Node):
         # publish new world state
         self.to_sai.publish(self.world_state)
         self.get_logger().info("updated world state!")
-
-        
-    
-
 
 
 def main(args=None):
