@@ -6,8 +6,8 @@ import random
 from rclpy.node import Node
 from geometry_msgs.msg import PoseArray
 from scipy.spatial.transform import Rotation as R
-from vex_interfaces.msg import Ball, GoalState #type:ignore
-from vex_interfaces.srv import OutputBall, Loader, IntakeBall #type:ignore
+from vex_interfaces.msg import Ball, GoalState 
+from vex_interfaces.srv import OutputBall, Loader, IntakeBall 
 from typing import Tuple, List
 from collections import deque
 from dataclasses import dataclass
@@ -29,13 +29,13 @@ class WorldServices(Node):
         # NOTE: red = 1, blue = 2!
 
         # subscribe to goal contents
-        self.create_subscription(GoalState, '/goals', self.save_goal_state, 10) # might upgrade message to "worldState" to include loaders
+        self.create_subscription(GoalState, '/goals', self.save_goal_state, 10)
 
         # subscribe to otto's location
         self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
 
         # publish intake status
-
+        self.intake_status = self.create_publisher()
         # my services
         self.output_ball = self.create_service(OutputBall, '/score_ball', self.output_ball)
         self.add_to_loader = self.create_service(Loader, '/loader', self.add_to_loader)
@@ -105,7 +105,7 @@ class WorldServices(Node):
         }
 
     def save_goal_state(self, msg:GoalState):
-        '''saves the world state'''
+        '''saves the goal state'''
         self.goal_state = msg
     
     def robot_pose_callback(self, msg:PoseArray):

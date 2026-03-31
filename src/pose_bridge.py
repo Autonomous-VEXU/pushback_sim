@@ -4,7 +4,7 @@ import json
 import subprocess
 import rclpy
 from rclpy.node import Node
-from vex_interfaces.msg import BallArray, Ball#type:ignore
+from vex_interfaces.msg import BallArray, Ball
 
 class PoseBridge(Node):
     def __init__(self):

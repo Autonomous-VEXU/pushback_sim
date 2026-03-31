@@ -2,7 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
-from vex_interfaces.msg import GoalState  #type:ignore
+from vex_interfaces.msg import GoalState
 from std_msgs.msg import Int64MultiArray
 
 class Scoring(Node):

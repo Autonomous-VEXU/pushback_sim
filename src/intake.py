@@ -1,17 +1,12 @@
 #!/usr/bin/env python3
-import rclpy
 
 from rclpy.node import Node
-from geometry_msgs.msg import PoseArray, Point
-from scipy.spatial.transform import Rotation as R
-from std_msgs.msg import Float64MultiArray
-from vex_interfaces.msg import Ball, BallArray#type:ignore
-from typing import Tuple
 import queue
-from vex_interfaces.srv import IntakeBall#type:ignore
-
+from vex_interfaces.msg import BallArray
+from vex_interfaces.srv import IntakeBall
 from ros_gz_interfaces.srv import DeleteEntity, SpawnEntity
-from ros_gz_interfaces.msg import Entity, EntityFactory
+from ros_gz_interfaces.msg import Entity
+
 
 class RobotIntake(Node):
     def __init__(self, matchload:bool):
@@ -38,18 +33,11 @@ class RobotIntake(Node):
     def intake_ball(self, request, response): # service
         '''/robot_collisions callback function'''
         if len(self.robot_intake) < 12:
-            self.remove_ball(request.ball_id)    
+            self.remove_ball(request.ball_id)
             self.robot_intake.append(1)
             self.update_intake_gui() # actually build out later
         else:
             self.get_logger().info("Hopper full")
-
-    def output_ball(self, ball:Ball): # another service
-        '''outputting a ball when scoring is not viable'''
-        # get latest ball by popping from the queue 
-        ball = self.robot_intake.pop()
-
-        pass
 
     def remove_ball(self, id:int):
         ball = Entity()

@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int32MultiArray
 from geometry_msgs.msg import PoseArray
-from vex_interfaces.msg import WorldState, BallArray, Loader, ControlZone, GoalState # type:ignore
+from vex_interfaces.msg import WorldState, BallArray, Loader, ControlZone, GoalState
 
 class StrategyAIBridge(Node):
     def __init__(self):
@@ -10,9 +10,7 @@ class StrategyAIBridge(Node):
 
         # subscribe to score, robot pose, objects, goal states, etc
         self.create_subscription(Int32MultiArray, '/game_score', self.score_cb, 10)
-        self.create_subscription(BallArray, '/object_locations/field', self.field_blocks_cb, 10)
-        self.create_subscription(GoalState, '/goals', self.goal_cb, 10)
-        self.create_subscription(ControlZone, '/control_zone', self.ctrl_zone_cb)
+        self.create_subscription(GoalState, '/goals', self.goal_ctrl_zone_cb, 10)
         self.create_subscription(PoseArray,'/otto_pose', self.robot_pose_cb)
         self.create_subscription(BallArray, '/robot_intake_status', self.intake_cb)
 
@@ -24,19 +22,23 @@ class StrategyAIBridge(Node):
 
         # globals for storing current state
         self.world_state = WorldState()
-        
     
     def score_cb(self, msg): 
         self.world_state.score = msg
+            
+    def goal_ctrl_zone_cb(self, msg): 
+        '''updates the goals and control zone part of the world state'''
+        self.world_state.goals = msg
 
-    def field_blocks(self, msg:BallArray): 
-        for ball in msg:
-            if 
-        
-    def goal_cb(self, msg): pass
-    def ctrl_zone_cb(self, msg): pass
-    def robot_pose_cb(self, msg): pass
-    def intake_cb(self, msg): pass
+
+    def ctrl_zone_cb(self, msg): 
+        pass
+
+    def robot_pose_cb(self, msg): 
+        pass
+
+    def intake_cb(self, msg): 
+        pass
     
     def update_sai_world_state(self): 
         # build header msg

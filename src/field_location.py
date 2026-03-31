@@ -7,9 +7,9 @@ from sensor_msgs.msg import Joy
 from geometry_msgs.msg import PoseArray, Point
 from scipy.spatial.transform import Rotation as R
 from std_msgs.msg import Float64MultiArray
-from vex_interfaces.msg import Ball, BallArray, GoalState#type:ignore
+from vex_interfaces.msg import Ball, BallArray, GoalState, LoaderState
 from typing import Tuple
-from vex_interfaces.srv import IntakeBall, OutputBall#type:ignore
+from vex_interfaces.srv import IntakeBall, OutputBall
 
 # NOTE: Might want to consider moving the location checking to world_services. Also might want to split the controller callbacks to another node...
 # NOTE: at some point i need to move all of the common locations into another class so that everything uses the same reference points
@@ -26,8 +26,9 @@ class FieldLocation(Node):
         # debug topic that i should remove later
         self.debug = self.create_publisher(Float64MultiArray, '/debug', 10)
 
-        # publishers for entities in goals
+        # publishers for entities in goals and loaders
         self.goals = self.create_publisher(GoalState, '/goals', 10)
+        self.loaders = self.create_publisher(LoaderState, '/loaders', 10)
 
         # robot location / pose subscriber
         self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
@@ -92,6 +93,12 @@ class FieldLocation(Node):
         long_2_3 = []
         center_low = []
         center_high = []
+
+        loader_state = LoaderState()
+        q1_loader = [] # (x,y)
+        q2_loader = [] # (x,y)
+        q3_loader = [] # (-x, -y)
+        q4_loader = [] # (x,y)
 
         def dist_from_line(p1:tuple, p2:tuple, p3:tuple):
             '''distance a ball is from the line formed by the two ends of the goal'''
@@ -176,8 +183,29 @@ class FieldLocation(Node):
                 return 2
             else:
                 return 0
+        
+        def calc_loader_contents(quadrant:int, balls: BallArray):
+            centers = [(1.19, 1.72), 
+                       (-1.19, 1.72),
+                       (-1.19, -1.72),
+                       (1.19, -1.72)]
+            
+            tol = (0.05, 0.05)
+            
+            center_idx = quadrant - 1
+            center = centers[center_idx]
+            loader_balls = []
 
-        # publish the updated GoalState message
+            for ball in balls.object_array:
+                if self.in_bounds((ball.location.x, ball.location.y), center, tol):
+                    loader_balls.append(ball)
+
+            # sort by z height
+            loader_balls.sort(key=lambda x: x.location.z)
+
+            return loader_balls
+
+        # build the updated GoalState message
         goal_state.center_low = BallArray()
         goal_state.center_low.object_array = center_low
         
@@ -196,7 +224,25 @@ class FieldLocation(Node):
         goal_state.long_a_ctrl = calc_long_ctrl_zone(long_1_4, long_a_center)
         goal_state.long_b_ctrl = calc_long_ctrl_zone(long_2_3, long_b_center)
 
+        # build the LoaderState message
+        loader_state.loader_q1 = BallArray() 
+        loader_state.loader_q1.object_array = calc_loader_contents(1, msg)
+
+        loader_state.loader_q2 = BallArray() 
+        loader_state.loader_q2.object_array = calc_loader_contents(2, msg)
+
+        loader_state.loader_q3 = BallArray() 
+        loader_state.loader_q3.object_array = calc_loader_contents(3, msg)
+
+        loader_state.loader_q4 = BallArray() 
+        loader_state.loader_q4.object_array = calc_loader_contents(4, msg)
+
+        # publish the goal message
         self.goals.publish(goal_state)
+
+        # publish the loader message
+        self.loaders.publish(loader_state)
+        
             
     def check_collision(self):
         '''did the robot collide with a ball or not'''
@@ -246,7 +292,7 @@ class FieldLocation(Node):
             
         self.get_logger().info("no ball found")
     
-    def ball_color(self, ball:Ball):
+    def ball_color(self, ball:Ball): #TODO: remove this and refactor to use the color attribute found in vex_interfaces/Ball.msg
         '''return ball color. red = 1, blue = 2'''
         red_identifyers = ["red", "R"]
         if any(sub in ball.object_name for sub in red_identifyers):
