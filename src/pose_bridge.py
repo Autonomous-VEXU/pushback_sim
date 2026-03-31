@@ -51,7 +51,8 @@ class PoseBridge(Node):
         objects = BallArray()
         data = self.echo_gz_topic() # contains one header and the rest are poses/object positions
 
-        non_object_names = ['link', 'Otto', 'wheel_a', 'wheel_b', 'wheel_c', 'wheel_d']
+        non_object_names = ['link', 'Otto', 'front_left_wheel', 'back_right_wheel', 'back_left_wheel', 'front_right_wheel', 
+                            'wheel_a', 'wheel_b', 'wheel_c', 'wheel_d']
 
         for pose in data.get("pose", []):
             if pose.get("name") not in non_object_names:

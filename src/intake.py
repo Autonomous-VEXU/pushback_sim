@@ -14,8 +14,6 @@ from pushback_sim.srv import IntakeBall
 from ros_gz_interfaces.srv import DeleteEntity, SpawnEntity
 from ros_gz_interfaces.msg import Entity, EntityFactory
 
-import rqt_py_common
-
 class RobotIntake(Node):
     def __init__(self, matchload:bool):
         super().__init__('intake')

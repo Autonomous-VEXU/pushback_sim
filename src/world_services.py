@@ -304,6 +304,10 @@ class WorldServices(Node):
             self.blue_blocks_left = self.blue_blocks_left - 1
             self.get_logger().info(f"Blue blocks left: {self.blue_blocks_left}")
         
+        else:
+            response = False
+            return response
+        
         ball.sdf_filename = model_pkg_path
         loader_pose = self.loader_locations[request.loader_id]
         ball.pose.position.x = loader_pose[0]

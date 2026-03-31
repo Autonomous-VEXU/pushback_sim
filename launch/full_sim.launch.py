@@ -24,10 +24,10 @@ def generate_launch_description():
         launch_arguments={'x_pose': '0.5','y_pose': '0.0'}.items()
     )
 
-    # enable teleop control
-    teleop = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py'))
-    )
+    # # enable teleop control
+    # teleop = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py'))
+    # )
 
     # bridge services
     delete_object_bridge = Node(
@@ -66,7 +66,7 @@ def generate_launch_description():
     return LaunchDescription([
         world, 
         otto, 
-        teleop,
+        # teleop,
         object_poses,
         delete_object_bridge,
         world_services,
