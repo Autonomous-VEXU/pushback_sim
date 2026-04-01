@@ -11,7 +11,6 @@ from vex_interfaces.msg import Ball, BallArray, GoalState, LoaderState
 from typing import Tuple
 from vex_interfaces.srv import IntakeBall, OutputBall
 
-
 # NOTE: Might want to consider moving the location checking to world_services. Also might want to split the controller callbacks to another node...
 # NOTE: at some point i need to move all of the common locations into another class so that everything uses the same reference points
 
@@ -27,6 +26,7 @@ class FieldLocation(Node):
         # publishers for entities in goals and loaders
         self.goals = self.create_publisher(GoalState, '/goals', 10)
         self.loaders = self.create_publisher(LoaderState, '/loaders', 10)
+        self.field_objects = self.create_publisher(BallArray, '/field_objects', 10)
 
         # robot location / pose subscriber
         self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
@@ -48,13 +48,13 @@ class FieldLocation(Node):
         '''handle controller input'''
 
         # check controller input for the intake / scoring buttons being pressed
-        if msg.buttons[1] == 1 and self.prev_button_1 == 0: # output mid
+        if msg.buttons[1] == 1 and self.prev_button_1 == 0: # output mid (PS4: )
             self.scoring_callback(2)
-        elif msg.buttons[0] == 1 and self.prev_button_0 == 0: # activate intake
+        elif msg.buttons[0] == 1 and self.prev_button_0 == 0: # activate intake (PS4: 0)
             self.check_collision()
-        elif msg.buttons[2] ==1 and self.prev_button_2 == 0: # output high
+        elif msg.buttons[2] ==1 and self.prev_button_2 == 0: # output high (PS4: square)
             self.scoring_callback(3)
-        elif msg.buttons[3] == 1 and self.prev_button_3 == 0: # output low
+        elif msg.buttons[3] == 1 and self.prev_button_3 == 0: # output low (PS4: )
             self.scoring_callback(1)
 
         self.prev_button_0 = msg.buttons[0]
@@ -76,7 +76,7 @@ class FieldLocation(Node):
             quat_normalized = quat_array / quat_norm
         else:
             quat_normalized = quat_array 
-            
+    
         rotation = R.from_quat(quat_normalized)
 
         euler = rotation.as_euler('xyz') # THIS IS IN RADIANS!
@@ -86,6 +86,8 @@ class FieldLocation(Node):
         '''read all of the objects published from the pose_bridge node and see if they are in a goal or not '''
         self.objects = msg
 
+        self.field_blocks = BallArray()
+
         goal_state = GoalState()
         long_1_4 = []
         long_2_3 = []
@@ -93,10 +95,6 @@ class FieldLocation(Node):
         center_high = []
 
         loader_state = LoaderState()
-        q1_loader = [] # (x,y)
-        q2_loader = [] # (x,y)
-        q3_loader = [] # (-x, -y)
-        q4_loader = [] # (x,y)
 
         def dist_from_line(p1:tuple, p2:tuple, p3:tuple):
             '''distance a ball is from the line formed by the two ends of the goal'''
@@ -132,11 +130,11 @@ class FieldLocation(Node):
                 elif 0.05 < ball.location.z < 0.10 and dist_from_line((-0.15, 0.15), (0.15, -0.15), ball_xy) < 0.05: # lower center goal
                     center_low.append(ball)
             else:
-                continue
+                self.field_blocks.object_array.append(ball) # 
         
         def calc_center_ctrl_zone(goal:BallArray):
             '''
-            calculates which team gets a control zones bonus
+            calculates which team gets a control zones bonus 
 
             0 = no control of the goal
             1 = red controls the goal
@@ -155,8 +153,10 @@ class FieldLocation(Node):
             
             if red_ct > blue_ct:
                 return 1
-            elif blue_ct > red_ct:
+            if blue_ct > red_ct:
                 return 2
+            else: 
+                return 0
             
         # control zone centers/params
         long_a_center = (1.20, 0.00)
@@ -198,6 +198,8 @@ class FieldLocation(Node):
             for ball in balls.object_array:
                 if self.in_bounds((ball.location.x, ball.location.y), center, tol):
                     loader_balls.append(ball)
+                    if ball in self.field_blocks.object_array:
+                        self.field_blocks.object_array.remove(ball)
 
             # sort by z height
             loader_balls.sort(key=lambda x: x.location.z)
@@ -208,6 +210,7 @@ class FieldLocation(Node):
             return color_balls
 
         # build the updated GoalState message
+        goal_state = GoalState()
         goal_state.center_low = BallArray()
         goal_state.center_low.object_array = center_low
         
@@ -227,6 +230,7 @@ class FieldLocation(Node):
         goal_state.long_b_ctrl = calc_long_ctrl_zone(long_2_3, long_b_center)
 
         # build the LoaderState message
+        loader_state = LoaderState()
         loader_state.loader_q1 = Int64MultiArray() 
         loader_state.loader_q1.data = calc_loader_contents(1, msg)
 
@@ -244,6 +248,9 @@ class FieldLocation(Node):
 
         # publish the loader message
         self.loaders.publish(loader_state)
+
+        # publish the blocks that are not in goals or in the loaders
+        self.field_objects.publish(self.field_blocks)
             
     def check_collision(self):
         '''did the robot collide with a ball or not'''
@@ -265,7 +272,7 @@ class FieldLocation(Node):
 
             th = self.robot_r
 
-            # world → robot frame
+            # world --> robot frame
             dx_r =  np.cos(th) * dx + np.sin(th) * dy
             dy_r = -np.sin(th) * dx + np.cos(th) * dy
 

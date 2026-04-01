@@ -8,7 +8,7 @@ from geometry_msgs.msg import PoseArray
 from scipy.spatial.transform import Rotation as R
 from vex_interfaces.msg import Ball, GoalState 
 from vex_interfaces.srv import OutputBall, Loader, IntakeBall 
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Int64MultiArray
 from typing import Tuple, List
 from collections import deque
 from dataclasses import dataclass
@@ -36,7 +36,7 @@ class WorldServices(Node):
         self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
 
         # publish robot hopper contents
-        self.robot_blocks = self.create_publisher(Float64MultiArray, '/robot_blocks', 10)
+        self.robot_blocks = self.create_publisher(Int64MultiArray, '/robot_blocks', 10)
         self.create_timer(0.5, self.update_hopper_status)
 
         # my services
@@ -280,7 +280,7 @@ class WorldServices(Node):
     
     def update_hopper_status(self):
         '''update the status of the robot hopper'''
-        hopper_msg = Float64MultiArray()
+        hopper_msg = Int64MultiArray()
         hopper_msg.data = self.robot_intake
         self.robot_blocks.publish(hopper_msg)
 

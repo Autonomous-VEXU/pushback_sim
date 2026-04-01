@@ -15,11 +15,19 @@ def generate_launch_description():
     otto_br = get_package_share_directory('otto_bringup')
 
     # strategy AI bridge launch arg
-    sai = LaunchConfiguration('strategy_ai')
+    sai = LaunchConfiguration('s_ai')
     sai_cmd = DeclareLaunchArgument(
-        'strategy_ai',
+        's_ai',
         default_value='false',
         description='conditionally launches the strategy AI bridge node'
+    ) 
+
+    # strategy AI bridge launch arg
+    teleop_toggle = LaunchConfiguration('teleop')
+    teleop_toggle_cmd = DeclareLaunchArgument(
+        'teleop',
+        default_value='true',
+        description='conditionally launches teleop control'
     ) 
    
     # world launch file
@@ -36,7 +44,8 @@ def generate_launch_description():
 
     # enable teleop control
     teleop = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py'))
+        PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py')),
+        condition=IfCondition(teleop_toggle)
     )
 
     # bridge services
@@ -89,6 +98,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        teleop_toggle_cmd,
         world,
         sai_cmd, 
         otto, 
