@@ -3,14 +3,32 @@ import os
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition
 
 def generate_launch_description():
     # file + directory paths
     this_dir = get_package_share_directory('pushback_sim')
     otto_gz = get_package_share_directory('otto_gazebo')
     otto_br = get_package_share_directory('otto_bringup')
+
+    # strategy AI bridge launch arg
+    sai = LaunchConfiguration('s_ai')
+    sai_cmd = DeclareLaunchArgument(
+        's_ai',
+        default_value='false',
+        description='conditionally launches the strategy AI bridge node'
+    ) 
+
+    # strategy AI bridge launch arg
+    teleop_toggle = LaunchConfiguration('teleop')
+    teleop_toggle_cmd = DeclareLaunchArgument(
+        'teleop',
+        default_value='true',
+        description='conditionally launches teleop control'
+    ) 
    
     # world launch file
     world = IncludeLaunchDescription(
@@ -26,7 +44,8 @@ def generate_launch_description():
 
     # enable teleop control
     teleop = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py'))
+        PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py')),
+        condition=IfCondition(teleop_toggle)
     )
 
     # bridge services
@@ -49,7 +68,7 @@ def generate_launch_description():
         # output='screen'
     )
 
-    # scoring
+    # field locations
     locator = Node(
         package='pushback_sim',
         executable='field_location.py',
@@ -63,12 +82,31 @@ def generate_launch_description():
         output='screen'
     )
 
+    # scoring the game
+    scoring = Node(
+        package='pushback_sim',
+        executable='scoring.py',
+        output='screen'
+    )
+
+    # strategy AI bridge
+    sai_node = Node(
+        package='pushback_sim',
+        executable='strategy_ai_bridge.py',
+        output='screen',
+        condition=IfCondition(sai)
+    )
+
     return LaunchDescription([
-        world, 
+        teleop_toggle_cmd,
+        world,
+        sai_cmd, 
         otto, 
         teleop,
         object_poses,
         delete_object_bridge,
+        scoring,
         world_services,
-        locator
+        locator,
+        sai_node
     ])

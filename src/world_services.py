@@ -6,8 +6,9 @@ import random
 from rclpy.node import Node
 from geometry_msgs.msg import PoseArray
 from scipy.spatial.transform import Rotation as R
-from pushback_sim.msg import Ball, GoalState
-from pushback_sim.srv import OutputBall, Loader, IntakeBall
+from vex_interfaces.msg import Ball, GoalState 
+from vex_interfaces.srv import OutputBall, Loader, IntakeBall 
+from std_msgs.msg import Int64MultiArray
 from typing import Tuple, List
 from collections import deque
 from dataclasses import dataclass
@@ -29,10 +30,14 @@ class WorldServices(Node):
         # NOTE: red = 1, blue = 2!
 
         # subscribe to goal contents
-        self.create_subscription(GoalState, '/goals', self.save_goal_state, 10) # might upgrade message to "worldState" to include loaders
+        self.create_subscription(GoalState, '/goals', self.save_goal_state, 10)
 
         # subscribe to otto's location
         self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
+
+        # publish robot hopper contents
+        self.robot_blocks = self.create_publisher(Int64MultiArray, '/robot_blocks', 10)
+        self.create_timer(0.5, self.update_hopper_status)
 
         # my services
         self.output_ball = self.create_service(OutputBall, '/score_ball', self.output_ball)
@@ -64,16 +69,16 @@ class WorldServices(Node):
         )
 
         self.center_mid = Goal(
-            capacity = 6,
+            capacity = 7,
             endpoints = [11, 31],
-            contents = deque(maxlen=7),
+            contents = deque(maxlen=8),
             height = 0.27
         )
 
         self.center_low = Goal(
-            capacity = 6,
+            capacity = 7,
             endpoints = [21, 41],
-            contents = deque(maxlen=7),
+            contents = deque(maxlen=8),
             height = 0.06
         )
 
@@ -103,7 +108,7 @@ class WorldServices(Node):
         }
 
     def save_goal_state(self, msg:GoalState):
-        '''saves the world state'''
+        '''saves the goal state'''
         self.goal_state = msg
     
     def robot_pose_callback(self, msg:PoseArray):
@@ -176,7 +181,6 @@ class WorldServices(Node):
         drop_y = self.robot_y + random.uniform(-0.3, 0.3)
 
         self.spawn_block(ball_color, drop_x, drop_y, 0.4)
-        
         self.get_logger().info("dropped ball!")
         
     def score_goal(self, goal_id:int, color:int):
@@ -274,14 +278,17 @@ class WorldServices(Node):
             for block in self.goal_state.center_low.object_array:
                self.delete_block(block.id)
     
+    def update_hopper_status(self):
+        '''update the status of the robot hopper'''
+        hopper_msg = Int64MultiArray()
+        hopper_msg.data = self.robot_intake
+        self.robot_blocks.publish(hopper_msg)
+
     # Loader service functions
     def add_to_loader(self, request:Loader.Request, response):
         '''spawn ball slightly above loader'''
 
-        # if len(loader.id.object_array) >= self.loader_capacity: <-- add in error handling later
-        # response.success = False
-        # print (loader {loader.id} full!)
-        # return response
+        # TODO: prevent service from spawning a ball if there are 6 on the loader already
 
         ball = EntityFactory()
         ball.allow_renaming = True
@@ -303,6 +310,10 @@ class WorldServices(Node):
             model_pkg_path = '/home/kymadogg/ros2_ws/src/mqp/pushback_sim/models/blue-sphere/model.sdf'
             self.blue_blocks_left = self.blue_blocks_left - 1
             self.get_logger().info(f"Blue blocks left: {self.blue_blocks_left}")
+        
+        elif request.color != 1 or request.color != 2 :
+            response.success = False
+            return response
         
         ball.sdf_filename = model_pkg_path
         loader_pose = self.loader_locations[request.loader_id]
@@ -379,8 +390,10 @@ def main(args=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
-    node.destroy_node()
-    rclpy.shutdown()
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

@@ -1,4 +1,0 @@
-pushback_sim/BallArray long_b
-pushback_sim/BallArray long_a
-pushback_sim/BallArray center_low
-pushback_sim/BallArray center_high

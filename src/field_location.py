@@ -5,13 +5,14 @@ import numpy as np
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import PoseArray, Point
+from std_msgs.msg import Int64MultiArray
 from scipy.spatial.transform import Rotation as R
-from std_msgs.msg import Float64MultiArray
-from pushback_sim.msg import Ball, BallArray, GoalState
+from vex_interfaces.msg import Ball, BallArray, GoalState, LoaderState
 from typing import Tuple
-from pushback_sim.srv import IntakeBall, OutputBall
+from vex_interfaces.srv import IntakeBall, OutputBall
 
 # NOTE: Might want to consider moving the location checking to world_services. Also might want to split the controller callbacks to another node...
+# NOTE: at some point i need to move all of the common locations into another class so that everything uses the same reference points
 
 class FieldLocation(Node):
     def __init__(self):
@@ -22,11 +23,10 @@ class FieldLocation(Node):
         # subscribe to pose_bridge.py's output topic
         self.create_subscription(BallArray, '/object_locations', self.object_location_callback, 10)
 
-        # debug topic that i should remove later
-        self.debug = self.create_publisher(Float64MultiArray, '/debug', 10)
-
-        # publishers for entities in goals
+        # publishers for entities in goals and loaders
         self.goals = self.create_publisher(GoalState, '/goals', 10)
+        self.loaders = self.create_publisher(LoaderState, '/loaders', 10)
+        self.field_objects = self.create_publisher(BallArray, '/field_objects', 10)
 
         # robot location / pose subscriber
         self.create_subscription(PoseArray, '/otto_pose', self.robot_pose_callback, 10)
@@ -48,13 +48,13 @@ class FieldLocation(Node):
         '''handle controller input'''
 
         # check controller input for the intake / scoring buttons being pressed
-        if msg.buttons[1] == 1 and self.prev_button_1 == 0: # output mid
+        if msg.buttons[1] == 1 and self.prev_button_1 == 0: # output mid (PS4: )
             self.scoring_callback(2)
-        elif msg.buttons[0] == 1 and self.prev_button_0 == 0: # activate intake
+        elif msg.buttons[0] == 1 and self.prev_button_0 == 0: # activate intake (PS4: 0)
             self.check_collision()
-        elif msg.buttons[2] ==1 and self.prev_button_2 == 0: # output high
+        elif msg.buttons[2] ==1 and self.prev_button_2 == 0: # output high (PS4: square)
             self.scoring_callback(3)
-        elif msg.buttons[3] == 1 and self.prev_button_3 == 0: # output low
+        elif msg.buttons[3] == 1 and self.prev_button_3 == 0: # output low (PS4: )
             self.scoring_callback(1)
 
         self.prev_button_0 = msg.buttons[0]
@@ -76,7 +76,7 @@ class FieldLocation(Node):
             quat_normalized = quat_array / quat_norm
         else:
             quat_normalized = quat_array 
-            
+    
         rotation = R.from_quat(quat_normalized)
 
         euler = rotation.as_euler('xyz') # THIS IS IN RADIANS!
@@ -86,11 +86,15 @@ class FieldLocation(Node):
         '''read all of the objects published from the pose_bridge node and see if they are in a goal or not '''
         self.objects = msg
 
+        self.field_blocks = BallArray()
+
         goal_state = GoalState()
         long_1_4 = []
         long_2_3 = []
         center_low = []
         center_high = []
+
+        loader_state = LoaderState()
 
         def dist_from_line(p1:tuple, p2:tuple, p3:tuple):
             '''distance a ball is from the line formed by the two ends of the goal'''
@@ -126,9 +130,87 @@ class FieldLocation(Node):
                 elif 0.05 < ball.location.z < 0.10 and dist_from_line((-0.15, 0.15), (0.15, -0.15), ball_xy) < 0.05: # lower center goal
                     center_low.append(ball)
             else:
-                continue
+                self.field_blocks.object_array.append(ball) # 
+        
+        def calc_center_ctrl_zone(goal:BallArray):
+            '''
+            calculates which team gets a control zones bonus 
 
-        # publish the updated GoalState message
+            0 = no control of the goal
+            1 = red controls the goal
+            2 = blue controls the goal
+            '''
+
+            if len(goal) == 0: # no blocks in goal
+                return 0
+            
+            for ball in goal:
+                red_ct, blue_ct = 0, 0
+                if ball.color == 1:
+                    red_ct += 1
+                elif ball.color == 2:
+                    blue_ct += 1
+            
+            if red_ct > blue_ct:
+                return 1
+            if blue_ct > red_ct:
+                return 2
+            else: 
+                return 0
+            
+        # control zone centers/params
+        long_a_center = (1.20, 0.00)
+        long_b_center = (-1.20, 0.00)
+        ctrl_width = 0.294
+            
+        def is_in_long_ctrl_zone(ball, center, ctrl_width):
+            tol = ctrl_width / 2
+            return abs(ball.location.x - center[0]) < tol and abs(ball.location.y - center[1]) < tol
+
+        def calc_long_ctrl_zone(goal: BallArray, center):
+            red_ct, blue_ct = 0, 0
+            for ball in goal:
+                if is_in_long_ctrl_zone(ball, center, ctrl_width):
+                    if ball.color == 1:
+                        red_ct += 1
+                    elif ball.color == 2:
+                        blue_ct += 1
+            if red_ct > blue_ct:
+                return 1
+            elif blue_ct > red_ct:
+                return 2
+            else:
+                return 0
+        
+        def calc_loader_contents(quadrant:int, balls: BallArray):
+            centers = [(1.19, 1.72), 
+                       (-1.19, 1.72),
+                       (-1.19, -1.72),
+                       (1.19, -1.72)]
+            
+            tol = (0.05, 0.05)
+            
+            center_idx = quadrant - 1
+            center = centers[center_idx]
+            loader_balls = []
+            color_balls = []
+
+            for ball in balls.object_array:
+                if self.in_bounds((ball.location.x, ball.location.y), center, tol):
+                    loader_balls.append(ball)
+                    if ball in self.field_blocks.object_array:
+                        self.field_blocks.object_array.remove(ball)
+
+            # sort by z height
+            loader_balls.sort(key=lambda x: x.location.z)
+
+            for ball in loader_balls:
+                color_balls.append(ball.color)
+
+            return color_balls
+
+        # build the updated GoalState message
+        goal_state = GoalState()
         goal_state.center_low = BallArray()
         goal_state.center_low.object_array = center_low
         
@@ -141,7 +223,34 @@ class FieldLocation(Node):
         goal_state.long_b = BallArray()
         goal_state.long_b.object_array = long_2_3
 
+        # update control zone status
+        goal_state.center_low_ctrl = calc_center_ctrl_zone(center_low)
+        goal_state.center_high_ctrl = calc_center_ctrl_zone(center_high)
+        goal_state.long_a_ctrl = calc_long_ctrl_zone(long_1_4, long_a_center)
+        goal_state.long_b_ctrl = calc_long_ctrl_zone(long_2_3, long_b_center)
+
+        # build the LoaderState message
+        loader_state = LoaderState()
+        loader_state.loader_q1 = Int64MultiArray() 
+        loader_state.loader_q1.data = calc_loader_contents(1, msg)
+
+        loader_state.loader_q2 = Int64MultiArray() 
+        loader_state.loader_q2.data = calc_loader_contents(2, msg)
+
+        loader_state.loader_q3 = Int64MultiArray() 
+        loader_state.loader_q3.data = calc_loader_contents(3, msg)
+
+        loader_state.loader_q4 = Int64MultiArray() 
+        loader_state.loader_q4.data = calc_loader_contents(4, msg)
+
+        # publish the goal message
         self.goals.publish(goal_state)
+
+        # publish the loader message
+        self.loaders.publish(loader_state)
+
+        # publish the blocks that are not in goals or in the loaders
+        self.field_objects.publish(self.field_blocks)
             
     def check_collision(self):
         '''did the robot collide with a ball or not'''
@@ -153,11 +262,6 @@ class FieldLocation(Node):
         x = h + offset * np.cos(th)
         y = k + offset * np.sin(th)
 
-        db = Float64MultiArray()
-        db.data = [x, y]
-        
-        self.debug.publish(db) # remove this later
-
         # validate ball location helper method
         def in_intake_zone(ref_x, ref_y, ball_pos: Point):
             z_t = 0.06
@@ -168,7 +272,7 @@ class FieldLocation(Node):
 
             th = self.robot_r
 
-            # world → robot frame
+            # world --> robot frame
             dx_r =  np.cos(th) * dx + np.sin(th) * dy
             dy_r = -np.sin(th) * dx + np.cos(th) * dy
 
@@ -191,7 +295,7 @@ class FieldLocation(Node):
             
         self.get_logger().info("no ball found")
     
-    def ball_color(self, ball:Ball):
+    def ball_color(self, ball:Ball): #TODO: remove this and refactor to use the color attribute found in vex_interfaces/Ball.msg
         '''return ball color. red = 1, blue = 2'''
         red_identifyers = ["red", "R"]
         if any(sub in ball.object_name for sub in red_identifyers):
@@ -279,8 +383,10 @@ def main(args=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
-    node.destroy_node()
-    rclpy.shutdown()
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

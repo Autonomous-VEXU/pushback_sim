@@ -4,7 +4,7 @@ import json
 import subprocess
 import rclpy
 from rclpy.node import Node
-from pushback_sim.msg import BallArray, Ball
+from vex_interfaces.msg import BallArray, Ball
 
 class PoseBridge(Node):
     def __init__(self):
@@ -51,7 +51,10 @@ class PoseBridge(Node):
         objects = BallArray()
         data = self.echo_gz_topic() # contains one header and the rest are poses/object positions
 
-        non_object_names = ['link', 'Otto', 'wheel_a', 'wheel_b', 'wheel_c', 'wheel_d']
+        non_object_names = ['link', 'Otto', 'front_left_wheel', 'back_right_wheel', 'back_left_wheel', 'front_right_wheel', 
+                            'wheel_a', 'wheel_b', 'wheel_c', 'wheel_d']
+        
+        red_model_names = ['R', 'red', 'Red']
 
         for pose in data.get("pose", []):
             if pose.get("name") not in non_object_names:
@@ -63,6 +66,10 @@ class PoseBridge(Node):
                     ball.location.x = position["x"]
                     ball.location.y = position["y"]
                     ball.location.z = position["z"]
+                    if any(red in pose.get("name", "") for red in red_model_names):
+                        ball.color = 1
+                    else:
+                        ball.color = 2
                     objects.object_array.append(ball)
     
         self.ball_locations.publish(objects)
