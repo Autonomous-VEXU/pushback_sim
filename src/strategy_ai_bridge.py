@@ -41,12 +41,17 @@ class StrategyAIBridge(Node):
         self.create_subscription(Int64MultiArray, '/robot_blocks', self.intake_cb, 10)
         self.create_subscription(BallArray, '/field_objects', self.field_objects_cb, 10)
         self.create_subscription(LoaderState, '/loaders', self.loader_cb, 10)
+        self.create_subscription(Int64MultiArray, '/blocks_remaining', self.blocks_left_update_callback, 10)
 
         # timer for controlling publishing rate
         self.create_timer(1.0, self.update_sai_world_state)
 
         # publisher for the world state on the /sai_input topic
         self.to_sai = self.create_publisher(WorldState, '/sai_input', 10)
+
+        # initialize blocks left at 12 per color
+        self.blocks_left_blue = 12
+        self.blocks_left_red = 12
 
         # globals for storing current state
         self.world_state = WorldState()
@@ -88,6 +93,9 @@ class StrategyAIBridge(Node):
 
     def field_objects_cb(self, msg:BallArray):
         self.world_state.blocks = msg
+    
+    def blocks_left_update_callback(self, msg:Int64MultiArray):
+        self.world_state.blocks_left = msg
     
     def update_sai_world_state(self): 
         # build header msg

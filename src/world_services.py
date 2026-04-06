@@ -8,7 +8,7 @@ from geometry_msgs.msg import PoseArray
 from scipy.spatial.transform import Rotation as R
 from vex_interfaces.msg import Ball, GoalState 
 from vex_interfaces.srv import OutputBall, Loader, IntakeBall 
-from std_msgs.msg import Int64MultiArray
+from std_msgs.msg import Int64MultiArray, Int64
 from typing import Tuple, List
 from collections import deque
 from dataclasses import dataclass
@@ -39,6 +39,9 @@ class WorldServices(Node):
         self.robot_blocks = self.create_publisher(Int64MultiArray, '/robot_blocks', 10)
         self.create_timer(0.5, self.update_hopper_status)
 
+        # blocks left
+        self.blocks_remaining = self.create_publisher(Int64MultiArray, '/blocks_remaining', 10)
+
         # my services
         self.output_ball = self.create_service(OutputBall, '/score_ball', self.output_ball)
         self.add_to_loader = self.create_service(Loader, '/loader', self.add_to_loader)
@@ -52,6 +55,10 @@ class WorldServices(Node):
         self.robot_intake = []
         self.blue_blocks_left = 12
         self.red_blocks_left = 12
+
+        blocks_rem_initial = Int64MultiArray()
+        blocks_rem_initial.data = [12, 12]
+        self.blocks_remaining.publish(blocks_rem_initial)
 
         # goals represented as custom data types
         self.goal_1_4 = Goal(
@@ -82,7 +89,7 @@ class WorldServices(Node):
             height = 0.06
         )
 
-        # locations
+        # locations (x, y, z)
         self.goal_locations = {
             11: (0.15, 0.15, 0.27),
             12: (1.20, 0.57, 0.39),
@@ -327,6 +334,7 @@ class WorldServices(Node):
         self.spawn_ball.call_async(loader_req)
 
         self.get_logger().info(f"added block to loader {request.loader_id}")
+        self.update_loader_blocks_left() # send update to strategy AI
         response.success = True
         return response
 
@@ -352,6 +360,11 @@ class WorldServices(Node):
         
         self.spawn_ball.call_async(spawn_req)
         return True
+    
+    def update_loader_blocks_left(self):
+        blocks_left = Int64MultiArray()
+        blocks_left.data = [self.red_blocks_left, self.blue_blocks_left]
+        self.blocks_remaining.publish(blocks_left)
 
     def delete_block(self, entity_id): # msg = ball id
         '''DeleteEntity wrapper function for deleting a block'''
