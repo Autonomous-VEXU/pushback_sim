@@ -52,7 +52,7 @@ class WorldServices(Node):
         self.spawn_ball = self.create_client(SpawnEntity, '/world/pushback/create')
 
         # world and robot state variables
-        self.robot_intake = []
+        self.robot_intake = [1, 1]
         self.blue_blocks_left = 12
         self.red_blocks_left = 12
 

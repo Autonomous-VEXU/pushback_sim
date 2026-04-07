@@ -130,7 +130,7 @@ class FieldLocation(Node):
                 elif 0.05 < ball.location.z < 0.10 and dist_from_line((-0.15, 0.15), (0.15, -0.15), ball_xy) < 0.05: # lower center goal
                     center_low.append(ball)
             else:
-                self.field_blocks.object_array.append(ball) # 
+                self.field_blocks.object_array.append(ball) # on the field
         
         def calc_center_ctrl_zone(goal:BallArray):
             '''
@@ -250,6 +250,8 @@ class FieldLocation(Node):
         self.loaders.publish(loader_state)
 
         # publish the blocks that are not in goals or in the loaders
+        num_blocks = len(self.field_blocks.object_array)
+        self.get_logger().info(f'number of blocks on the {num_blocks}')
         self.field_objects.publish(self.field_blocks)
             
     def check_collision(self):
