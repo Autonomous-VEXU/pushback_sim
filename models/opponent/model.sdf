@@ -6,10 +6,11 @@
     <static>false</static>
 
     <link name="oppoonent_base">
+      <!-- i want it to be in the air, close to Otto's lidar height-->
+      <gravity>false</gravity>
 
       <!--pose of link relative to model-->
       <pose>0 0 0 0 0 0</pose>
-
 
       <visual name="visual">
           <geometry>
@@ -41,7 +42,6 @@
             </surface>
       </collision>
 
-
       <inertial>
         <mass>0.04</mass> <!--units are in kg. 1g = 0.001kg-->
         <inertia>
@@ -66,19 +66,9 @@
       <static_update_frequency>1</static_update_frequency>
     </plugin>
 
-    <plugin
-        filename="gz-sim-planar-move-system"
-        name="gz::sim::systems::PlanarMove">
-        <cmd_vel>/opponent/cmd_vel</cmd_vel>
-        <odom_topic>/opponent/odom</odom_topic>
-        <odom_frame>opponent_odom</odom_frame>
-        <robot_base_frame>opponent_base</robot_base_frame>
-        <covariance_x>0.0001</covariance_x>
-        <covariance_y>0.0001</covariance_y>
-        <covariance_yaw>0.001</covariance_yaw>
-    </plugin>
 
-   
+    <!-- <plugin filename="libmodelTeleport.so" name="model_teleport::ModelTeleportPlugin"/> -->
+
   </model>
 </sdf>
 
