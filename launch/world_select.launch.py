@@ -34,6 +34,7 @@ def generate_launch_description():
     # arguments for gz sim
     arguments = LaunchDescription([
         DeclareLaunchArgument('world', default_value='empty', description=worlds),
+        DeclareLaunchArgument('headless', description="Run Gazebo headless"),
     ])
 
     # actually run gazebo
@@ -41,7 +42,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('ros_gz_sim'), 'launch'), '/gz_sim.launch.py']),
         launch_arguments = [
-            ('gz_args', [LaunchConfiguration('world'),'.sdf',' -v 4',' -r'])
+            ('gz_args', [LaunchConfiguration('world'),'.sdf',' -v 4', (' -s' if LaunchConfiguration('headless') else ''),' -r'])
         ]
     )
     # launch each item defined above by returning the variable
