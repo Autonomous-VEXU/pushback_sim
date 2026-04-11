@@ -11,13 +11,9 @@ from ros_gz_bridge.actions import RosGzBridge
 
 def generate_launch_description():
     # file + directory paths
-    this_dir = get_package_share_directory('pushback_sim')
-    otto_gz = get_package_share_directory('otto_gazebo')
-    otto_br = get_package_share_directory('otto_bringup')
-
-    # config files 
-    robot_gt = PathJoinSubstitution([this_dir, 'config', 'robot_pose.yaml'])
-    opponent_gt = PathJoinSubstitution([this_dir, 'config', 'opponent_pose.yaml'])
+    # this_dir = get_package_share_directory('pushback_sim')
+    # otto_gz = get_package_share_directory('otto_gazebo')
+    # otto_br = get_package_share_directory('otto_bringup')
 
     # strategy AI bridge launch arg
     sai = LaunchConfiguration('s_ai')
@@ -35,31 +31,31 @@ def generate_launch_description():
         description='toggles opponent spawning into world + other nodes launching'
     ) 
 
-    # strategy AI bridge launch arg
-    teleop_toggle = LaunchConfiguration('teleop')
-    teleop_toggle_cmd = DeclareLaunchArgument(
-        'teleop',
-        default_value='true',
-        description='conditionally launches teleop control'
-    ) 
+    # # strategy AI bridge launch arg
+    # teleop_toggle = LaunchConfiguration('teleop')
+    # teleop_toggle_cmd = DeclareLaunchArgument(
+    #     'teleop',
+    #     default_value='true',
+    #     description='conditionally launches teleop control'
+    # ) 
    
-    # world launch file
-    world = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(this_dir, 'launch', 'world_select.launch.py')),
-        launch_arguments={'world': 'pushback'}.items()
-    )
+    # # world launch file
+    # world = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(os.path.join(this_dir, 'launch', 'world_select.launch.py')),
+    #     launch_arguments={'world': 'pushback'}.items()
+    # )
 
-    # spawn robot
-    otto = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(otto_gz, 'launch', 'spawn_robot.launch.py')),
-        launch_arguments={'x_pose': '0.0','y_pose': '-1.0'}.items()
-    )
+    # # spawn robot
+    # otto = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(os.path.join(otto_gz, 'launch', 'spawn_robot.launch.py')),
+    #     launch_arguments={'x_pose': '0.0','y_pose': '-1.0'}.items()
+    # )
 
-    # enable teleop control
-    teleop = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py')),
-        condition=IfCondition(teleop_toggle)
-    )
+    # # enable teleop control
+    # teleop = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py')),
+    #     condition=IfCondition(teleop_toggle)
+    # )
 
     # bridge services
     delete_object_bridge = Node(
@@ -138,12 +134,12 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        teleop_toggle_cmd,
+        # teleop_toggle_cmd,
         opponent_launch_cmd,
-        world,
+        # world,
         sai_cmd, 
-        otto, 
-        teleop,
+        # otto, 
+        # teleop,
         otto_pose_bridge,
         opponent_pose_bridge,
         object_poses,

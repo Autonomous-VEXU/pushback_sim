@@ -12,6 +12,9 @@ class PoseBridge(Node):
         self.auto_update = self.create_timer(0.5, self.update_locations)
         self.ball_locations = self.create_publisher(BallArray, '/object_locations', 10)
 
+        # world name parameter
+        # self.declare_parameter('world_name', 'pushback')
+
         # world name for pose topic
         self.world_name = 'pushback'
 
@@ -19,14 +22,23 @@ class PoseBridge(Node):
 
     def echo_gz_topic(self):
 
-        result = subprocess.run(
-            ["gz", "topic", "-e", "-t", f"world/{self.world_name}/dynamic_pose/info", "-n", "1", "--json-output"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
+        try:
+            result = subprocess.run(
+                ["gz", "topic", "-e", "-t", f"world/{self.world_name}/dynamic_pose/info", "-n", "1", "--json-output"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=5
+            )
+        except subprocess.TimeoutExpired:
+            self.get_logger().warning("gz topic command timed out after 5 seconds")
+            return {"pose": []}
+        except Exception as e:
+            self.get_logger().error(f"Unexpected error running gz topic: {e}")
+            return {"pose": []}
+            
         if result.returncode != 0:
-            self.get_logger().error(f"Command failed with return code {result.returncode}: {result.stderr}")
+            self.get_logger().warning(f"gz topic returned code {result.returncode}")
             return {"pose": []}
         try:
             # only get ONE json item
@@ -51,7 +63,7 @@ class PoseBridge(Node):
         objects = BallArray()
         data = self.echo_gz_topic() # contains one header and the rest are poses/object positions
 
-        non_object_names = ['link', 'Otto', 'front_left_wheel', 'back_right_wheel', 'back_left_wheel', 'front_right_wheel', 
+        non_object_names = ['link', 'Otto', 'opponent','front_left_wheel', 'back_right_wheel', 'back_left_wheel', 'front_right_wheel', 
                             'wheel_a', 'wheel_b', 'wheel_c', 'wheel_d']
         
         red_model_names = ['R', 'red', 'Red']

@@ -84,11 +84,11 @@
       <uri>model://clear-objects</uri>
     </include>
 
-  <!--Opponent model (box) -->
+  <!--Opponent model (box), spawn outside field in case opponent:=false-->
 
     <include>
       <uri>model://opponent</uri>
-      <pose>0.0 1.0 0.2 0 0 0</pose>
+      <pose>4.0 4.0 0.2 0 0 0</pose>
     </include>
 
   <!-- SCORING OBJECT INTITAL POSITION -->
