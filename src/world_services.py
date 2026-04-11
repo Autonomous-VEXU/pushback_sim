@@ -8,7 +8,7 @@ from geometry_msgs.msg import PoseArray
 from scipy.spatial.transform import Rotation as R
 from vex_interfaces.msg import Ball, GoalState 
 from vex_interfaces.srv import OutputBall, Loader, IntakeBall 
-from std_msgs.msg import Int64MultiArray, Int64
+from std_msgs.msg import Int64MultiArray
 from typing import Tuple, List
 from collections import deque
 from dataclasses import dataclass
@@ -141,7 +141,7 @@ class WorldServices(Node):
     # IntakeBall Service callback + functionality
     def intake_ball(self, request, response): 
         ''' Intake ball service callback function'''
-        if len(self.robot_intake) < 12: # if under max capacity
+        if len(self.robot_intake) < 10: # if under max capacity
             self.delete_block(request.ball_id)  
             self.robot_intake.append(request.color)
             self.get_logger().info(f'robot intake status: {self.robot_intake}')

@@ -84,9 +84,16 @@
       <uri>model://clear-objects</uri>
     </include>
 
-   <!-- SCORING OBJECT INTITAL POSITION -->
+  <!--Opponent model (box), spawn outside field in case opponent:=false-->
 
-   <!-- preloader 1 (each color #1-3) -->
+    <include>
+      <uri>model://opponent</uri>
+      <pose>4.0 4.0 0.2 0 0 0</pose>
+    </include>
+
+  <!-- SCORING OBJECT INTITAL POSITION -->
+
+  <!-- preloader 1 (each color #1-3) -->
    <include>
     <name>B1</name>
     <uri>model://blue-sphere</uri>
