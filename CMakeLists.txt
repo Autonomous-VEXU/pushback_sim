@@ -25,6 +25,7 @@ install(PROGRAMS
   src/world_services.py
   src/scoring.py
   src/strategy_ai_bridge.py
+  src/opponent.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

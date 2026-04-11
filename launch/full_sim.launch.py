@@ -5,8 +5,9 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.conditions import IfCondition
+from ros_gz_bridge.actions import RosGzBridge
 
 def generate_launch_description():
     # file + directory paths
@@ -14,12 +15,24 @@ def generate_launch_description():
     otto_gz = get_package_share_directory('otto_gazebo')
     otto_br = get_package_share_directory('otto_bringup')
 
+    # config files 
+    robot_gt = PathJoinSubstitution([this_dir, 'config', 'robot_pose.yaml'])
+    opponent_gt = PathJoinSubstitution([this_dir, 'config', 'opponent_pose.yaml'])
+
     # strategy AI bridge launch arg
     sai = LaunchConfiguration('s_ai')
     sai_cmd = DeclareLaunchArgument(
         's_ai',
         default_value='false',
         description='conditionally launches the strategy AI bridge node'
+    ) 
+
+    # opponent toggle
+    opponent_launch = LaunchConfiguration('opponent')
+    opponent_launch_cmd = DeclareLaunchArgument(
+        'opponent',
+        default_value='true',
+        description='toggles opponent spawning into world + other nodes launching'
     ) 
 
     # strategy AI bridge launch arg
@@ -39,7 +52,7 @@ def generate_launch_description():
     # spawn robot
     otto = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(otto_gz, 'launch', 'spawn_robot.launch.py')),
-        launch_arguments={'x_pose': '0.5','y_pose': '0.0'}.items()
+        launch_arguments={'x_pose': '0.0','y_pose': '-1.0'}.items()
     )
 
     # enable teleop control
@@ -55,11 +68,30 @@ def generate_launch_description():
         name='entity_services_bridge',
         arguments=[
             '/world/pushback/remove@ros_gz_interfaces/srv/DeleteEntity',
-            '/world/pushback/create@ros_gz_interfaces/srv/SpawnEntity'
+            '/world/pushback/create@ros_gz_interfaces/srv/SpawnEntity',
+            '/world/pushback/set_pose@ros_gz_interfaces/srv/SetEntityPose'
         ],
         parameters=[{'use_sim_time': True}],
         output='screen'
     ) 
+
+    # robot model bridges
+    otto_pose_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='otto_bridge',
+        arguments=['model/Otto/pose@geometry_msgs/msg/PoseArray@gz.msgs.Pose_V'], 
+        remappings=[('/model/Otto/pose', '/otto_pose')]
+    )
+
+    opponent_pose_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='opponent_bridge',
+        arguments=['model/opponent/pose@geometry_msgs/msg/PoseArray@gz.msgs.Pose_V'], 
+        remappings=[('/model/opponent/pose', '/opponent/pose')],
+        condition=IfCondition(opponent_launch)
+    )
 
     # pose bridge
     object_poses = Node(
@@ -97,15 +129,27 @@ def generate_launch_description():
         condition=IfCondition(sai)
     )
 
+    # opponent model node
+    opponent_node = Node(
+        package='pushback_sim',
+        executable='opponent.py',
+        output='screen',
+        condition=IfCondition(opponent_launch)
+    )
+
     return LaunchDescription([
         teleop_toggle_cmd,
+        opponent_launch_cmd,
         world,
         sai_cmd, 
         otto, 
         teleop,
+        otto_pose_bridge,
+        opponent_pose_bridge,
         object_poses,
         delete_object_bridge,
         scoring,
+        opponent_node,
         world_services,
         locator,
         sai_node

@@ -15,7 +15,7 @@
       <visual name="visual">
           <geometry>
               <box>
-                  <size>0.1 0.1 0.1</size> <!--in meters-->
+                  <size>0.38 0.38 0.2</size> <!--in meters-->
               </box>
           </geometry>
           <material>
@@ -29,7 +29,7 @@
       <collision name="collision">
 			<geometry>
                 <box>
-                  <size>0.1 0.1 0.1</size> <!--in meters-->
+                 <size>0.38 0.38 0.2</size> <!--in meters-->
               </box>
 			</geometry>
 					<surface>

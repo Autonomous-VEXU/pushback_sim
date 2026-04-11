@@ -63,9 +63,9 @@ class PoseBridge(Node):
                     ball = Ball()
                     ball.object_name = pose.get("name", "")
                     ball.id = pose.get("id", 0)
-                    ball.location.x = position["x"]
-                    ball.location.y = position["y"]
-                    ball.location.z = position["z"]
+                    ball.location.x = float(position["x"])
+                    ball.location.y = float(position["y"])
+                    ball.location.z = float(position["z"])
                     if any(red in pose.get("name", "") for red in red_model_names):
                         ball.color = 1
                     else:
