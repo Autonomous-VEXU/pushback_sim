@@ -19,7 +19,7 @@ def generate_launch_description():
     sai = LaunchConfiguration('s_ai')
     sai_cmd = DeclareLaunchArgument(
         's_ai',
-        default_value='false',
+        default_value='true',
         description='conditionally launches the strategy AI bridge node'
     ) 
 
@@ -27,7 +27,7 @@ def generate_launch_description():
     opponent_launch = LaunchConfiguration('opponent')
     opponent_launch_cmd = DeclareLaunchArgument(
         'opponent',
-        default_value='true',
+        default_value='false',
         description='toggles opponent spawning into world + other nodes launching'
     ) 
 
@@ -134,12 +134,8 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        # teleop_toggle_cmd,
         opponent_launch_cmd,
-        # world,
         sai_cmd, 
-        # otto, 
-        # teleop,
         otto_pose_bridge,
         opponent_pose_bridge,
         object_poses,
