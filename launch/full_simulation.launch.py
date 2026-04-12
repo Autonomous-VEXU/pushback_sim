@@ -14,6 +14,13 @@ def generate_launch_description():
     otto_br = get_package_share_directory('otto_bringup')
     otto_nav = get_package_share_directory('otto_navigation')
 
+    keepout_filter = LaunchConfiguration('keepout_filter') # put in nav2 launch file soon
+    keepout_filter_cmd = DeclareLaunchArgument(
+        'keepout_filter',
+        default_value='true',
+        description='toggles using the keepout filter for the goals' 
+    ) 
+
     # strategy AI bridge launch arg
     teleop_toggle = LaunchConfiguration('teleop')
     teleop_toggle_cmd = DeclareLaunchArgument(
@@ -73,6 +80,13 @@ def generate_launch_description():
         condition=IfCondition(nav2_toggle)
     )
 
+    # remove soon
+    costmap_filter = IncludeLaunchDescription(  
+        PythonLaunchDescriptionSource(os.path.join(otto_gz, 'launch', 'keepout_filter.launch.py')),
+        launch_arguments={'use_sim_time': 'true'}.items(),
+        condition=IfCondition(keepout_filter)
+    )
+
     # launch file for the strategy AI model
     sai_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(this_dir, 'launch', 'strategy_ai.launch.py')),
@@ -80,12 +94,14 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        keepout_filter_cmd,  # remove soon
         teleop_toggle_cmd,
         sai_toggle_cmd,
         nav2_toggle_cmd,
         world_ctrl_cmd,
         world,
         nav2_launch,
+        costmap_filter, # remove soon
         otto,
         teleop,
         sim_backend,

@@ -26,6 +26,7 @@ install(PROGRAMS
   src/scoring.py
   src/strategy_ai_bridge.py
   src/opponent.py
+  src/ai_driver.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

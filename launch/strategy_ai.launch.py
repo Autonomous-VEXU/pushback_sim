@@ -27,6 +27,14 @@ def generate_launch_description():
         cmd=['/home/kymadogg/ros2_ws/src/mqp/.sai_env/bin/python3', '-m', 'sai.sai_node']
     )
 
+    # frames be wrong
+    sai_map_frame = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_tf_node',
+        arguments=['-1.75', '1.75', '0.2', '4.71239', '0', '0', 'map', 'sai_map']
+    )
+
     delayed_sai_node = TimerAction( 
         period=delay, 
         actions=[sai_node]
@@ -34,6 +42,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         delay_cmd,
+        sai_map_frame,
         sai_bridge,
         delayed_sai_node
     ])

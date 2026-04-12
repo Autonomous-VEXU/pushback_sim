@@ -21,7 +21,7 @@ class FieldLocation(Node):
         self.create_subscription(Joy, '/joy', self.controller_callback, 10)
 
         # subscribe to pose_bridge.py's output topic
-        self.create_subscription(BallArray, '/object_locations', self.object_location_callback, 10)
+        self.create_subscription(BallArray, '/_object_locations', self.object_location_callback, 10)
 
         # publishers for entities in goals and loaders
         self.goals = self.create_publisher(GoalState, '/goals', 10)
@@ -251,7 +251,7 @@ class FieldLocation(Node):
 
         # publish the blocks that are not in goals or in the loaders
         num_blocks = len(self.field_blocks.object_array)
-        self.get_logger().info(f'number of blocks on the {num_blocks}')
+        # self.get_logger().info(f'number of blocks on the {num_blocks}')
         self.field_objects.publish(self.field_blocks)
             
     def check_collision(self):

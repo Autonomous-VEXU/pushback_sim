@@ -66,14 +66,14 @@ def generate_launch_description():
     locator = Node(
         package='pushback_sim',
         executable='field_location.py',
-        output='screen'
+        #output='screen'
     )
 
     # world services endpoint
     world_services = Node(
         package='pushback_sim',
         executable='world_services.py',
-        output='screen'
+        #output='screen'
     )
 
     # scoring the game
