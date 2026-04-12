@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import os
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, ExecuteProcess, TimerAction
-from launch_ros.actions import Node
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
@@ -13,7 +12,7 @@ def generate_launch_description():
     this_dir = get_package_share_directory('pushback_sim')
     otto_gz = get_package_share_directory('otto_gazebo')
     otto_br = get_package_share_directory('otto_bringup')
-    sai_dir = get_package_share_directory('sai')
+    otto_nav = get_package_share_directory('otto_navigation')
 
     # strategy AI bridge launch arg
     teleop_toggle = LaunchConfiguration('teleop')
@@ -68,19 +67,17 @@ def generate_launch_description():
         condition=IfCondition(world_ctrl)
     )
 
-    # node that launches the strategy AI model
-    sai_node = ExecuteProcess(
-        cmd=['/home/kymadogg/ros2_ws/src/mqp/.sai_env/bin/python3', '-m', 'sai.sai_node'],
-        condition=IfCondition(sai_toggle)
-    )
-
     # launchfile for basic nav2
     nav2_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(otto_gz, 'launch', 'nav2.launch.py')),
         condition=IfCondition(nav2_toggle)
     )
 
-    delay_ai = TimerAction(period=10.0, actions=[sai_node])
+    # launch file for the strategy AI model
+    sai_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(this_dir, 'launch', 'strategy_ai.launch.py')),
+        condition=IfCondition(sai_toggle)
+    )
 
     return LaunchDescription([
         teleop_toggle_cmd,
@@ -88,9 +85,9 @@ def generate_launch_description():
         nav2_toggle_cmd,
         world_ctrl_cmd,
         world,
-        delay_ai,
         nav2_launch,
         otto,
         teleop,
-        sim_backend
+        sim_backend,
+        sai_launch
     ])

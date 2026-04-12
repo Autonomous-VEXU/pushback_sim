@@ -15,14 +15,6 @@ def generate_launch_description():
     # otto_gz = get_package_share_directory('otto_gazebo')
     # otto_br = get_package_share_directory('otto_bringup')
 
-    # strategy AI bridge launch arg
-    sai = LaunchConfiguration('s_ai')
-    sai_cmd = DeclareLaunchArgument(
-        's_ai',
-        default_value='true',
-        description='conditionally launches the strategy AI bridge node'
-    ) 
-
     # opponent toggle
     opponent_launch = LaunchConfiguration('opponent')
     opponent_launch_cmd = DeclareLaunchArgument(
@@ -31,34 +23,8 @@ def generate_launch_description():
         description='toggles opponent spawning into world + other nodes launching'
     ) 
 
-    # # strategy AI bridge launch arg
-    # teleop_toggle = LaunchConfiguration('teleop')
-    # teleop_toggle_cmd = DeclareLaunchArgument(
-    #     'teleop',
-    #     default_value='true',
-    #     description='conditionally launches teleop control'
-    # ) 
-   
-    # # world launch file
-    # world = IncludeLaunchDescription(
-    #     PythonLaunchDescriptionSource(os.path.join(this_dir, 'launch', 'world_select.launch.py')),
-    #     launch_arguments={'world': 'pushback'}.items()
-    # )
-
-    # # spawn robot
-    # otto = IncludeLaunchDescription(
-    #     PythonLaunchDescriptionSource(os.path.join(otto_gz, 'launch', 'spawn_robot.launch.py')),
-    #     launch_arguments={'x_pose': '0.0','y_pose': '-1.0'}.items()
-    # )
-
-    # # enable teleop control
-    # teleop = IncludeLaunchDescription(
-    #     PythonLaunchDescriptionSource(os.path.join(otto_br, 'launch', 'controller.launch.py')),
-    #     condition=IfCondition(teleop_toggle)
-    # )
-
     # bridge services
-    delete_object_bridge = Node(
+    gz_services_bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
         name='entity_services_bridge',
@@ -117,14 +83,6 @@ def generate_launch_description():
         output='screen'
     )
 
-    # strategy AI bridge
-    sai_node = Node(
-        package='pushback_sim',
-        executable='strategy_ai_bridge.py',
-        output='screen',
-        condition=IfCondition(sai)
-    )
-
     # opponent model node
     opponent_node = Node(
         package='pushback_sim',
@@ -134,15 +92,13 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        opponent_launch_cmd,
-        sai_cmd, 
+        opponent_launch_cmd, 
         otto_pose_bridge,
         opponent_pose_bridge,
         object_poses,
-        delete_object_bridge,
+        gz_services_bridge,
         scoring,
         opponent_node,
         world_services,
-        locator,
-        sai_node
+        locator
     ])
