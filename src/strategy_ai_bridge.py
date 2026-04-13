@@ -42,7 +42,7 @@ class StrategyAIBridge(Node):
         self.create_subscription(BallArray, '/field_objects', self.field_objects_cb, 10)
         self.create_subscription(LoaderState, '/loaders', self.loader_cb, 10)
         self.create_subscription(Int64MultiArray, '/blocks_remaining', self.blocks_left_update_callback, 10)
-        self.create_subscription(PoseArray, '/opponent/pose_2d', self.opponent_pose_callback, 10)
+        self.create_subscription(PoseArray, '/opponent/pose', self.opponent_pose_callback, 10)
 
         # timer for controlling publishing rate
         self.create_timer(1.0, self.update_sai_world_state)

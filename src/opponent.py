@@ -5,7 +5,6 @@ import numpy as np
 import random
 
 from rclpy.node import Node
-from geometry_msgs.msg import Pose2D
 from ros_gz_interfaces.srv import SetEntityPose, SpawnEntity
 from geometry_msgs.msg import PoseArray
 from scipy.spatial.transform import Rotation as R

@@ -1,19 +1,10 @@
-import os
-
-from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition
-from ros_gz_bridge.actions import RosGzBridge
 
 def generate_launch_description():
-    # file + directory paths
-    # this_dir = get_package_share_directory('pushback_sim')
-    # otto_gz = get_package_share_directory('otto_gazebo')
-    # otto_br = get_package_share_directory('otto_bringup')
 
     # opponent toggle
     opponent_launch = LaunchConfiguration('opponent')
