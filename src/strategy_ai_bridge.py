@@ -42,6 +42,7 @@ class StrategyAIBridge(Node):
         self.create_subscription(BallArray, '/field_objects', self.field_objects_cb, 10)
         self.create_subscription(LoaderState, '/loaders', self.loader_cb, 10)
         self.create_subscription(Int64MultiArray, '/blocks_remaining', self.blocks_left_update_callback, 10)
+        self.create_subscription(PoseArray, '/opponent/pose_2d', self.opponent_pose_callback, 10)
 
         # timer for controlling publishing rate
         self.create_timer(1.0, self.update_sai_world_state)
@@ -97,16 +98,39 @@ class StrategyAIBridge(Node):
     def blocks_left_update_callback(self, msg:Int64MultiArray):
         self.world_state.blocks_left = msg
     
+    def opponent_pose_callback(self, msg:PoseArray):
+        '''get the opponent robot pose'''
+
+        opp_x = msg.poses[-1].position.x
+        opp_y = msg.poses[-1].position.y
+
+        quat = msg.poses[-1].orientation
+        quat_array = np.array([quat.x, quat.y, quat.z, quat.w])
+
+        # normalize
+        quat_norm = np.linalg.norm(quat_array)
+        if quat_norm > 0: 
+            quat_normalized = quat_array / quat_norm
+        else:
+            quat_normalized = quat_array 
+    
+        rotation = R.from_quat(quat_normalized)
+
+        euler = rotation.as_euler('xyz') # THIS IS IN RADIANS!
+        opp_th = euler[2] # get the yaw (z rotation) value from the returned array
+
+        opp_2d_pose = Pose2D()
+        opp_2d_pose.x = opp_x
+        opp_2d_pose.y = opp_y
+        opp_2d_pose.theta = opp_th
+
+        self.world_state.opponent_pose = opp_2d_pose
+
+    
     def update_sai_world_state(self): 
         # build header msg
         self.world_state.header.stamp = self.get_clock().now().to_msg()
         self.world_state.header.frame_id = 'map'
-
-        # fake opponent pose for now
-        opp_pose = Pose2D()
-        opp_pose.x, opp_pose.y = float(0.0), float(0.0)
-        opp_pose.theta = float(0.0)
-        self.world_state.opponent_pose = opp_pose
 
         # publish new world state
         self.to_sai.publish(self.world_state)

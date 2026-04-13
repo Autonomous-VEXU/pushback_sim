@@ -24,9 +24,6 @@ class Opponent(Node):
         self.move_pose = self.create_client(SetEntityPose, '/world/pushback/set_pose')
         self.init_opponent = self.create_client(SpawnEntity, '/world/pushback/create')
 
-        # current opponent pose
-        self.opponent_pose = self.create_publisher(Pose2D, '/opponent/pose_2d', 10)
-
         self.opp_x = None
         self.opp_y = None
         self.opp_th = None
@@ -34,22 +31,6 @@ class Opponent(Node):
         self.current_pose_key = 8
         
         self.height = 0.2
-
-    # def spawn_model(self, x:float, y:float, z:float):
-    #     '''initially spawn in the opponent model'''
-      
-    #     model = EntityFactory()
-    #     model.sdf_filename = '/home/kymadogg/ros2_ws/src/mqp/pushback_sim/models/opponent/model.sdf'
-    #     model.name = 'opponent'
-
-    #     model.pose.position.x = x
-    #     model.pose.position.y = y
-    #     model.pose.position.z = z
-
-    #     spawn_req = SpawnEntity.Request()
-    #     spawn_req.entity_factory = model
-
-    #     self.init_opponent.call_async(spawn_req)
 
     def get_opponent_pose(self, msg:PoseArray):
         '''get the opponent robot pose'''
@@ -71,6 +52,7 @@ class Opponent(Node):
 
         euler = rotation.as_euler('xyz') # THIS IS IN RADIANS!
         self.opp_th = euler[2] # get the yaw (z rotation) value from the returned array
+
         
     @staticmethod
     def us_metric(value:float, unit:str):
@@ -85,18 +67,29 @@ class Opponent(Node):
     def dumb_behavior(self):
         '''move randomly along the pose graph given each time the timer is called'''
 
-        moveset = ((-1.24, 1.0), (-0.718, 0.98), (0.615, 1.0), (1.2, 1.03), 
-            (1.55, 0.187), (0.73, 0.12), (-0.57, 0.76), (-1.52, 0.1), (0.0, 1.0))
+        if np.random.binomial(n=1, p=0.7) == 0: # 70% chance of movement
+            return  
+
+        moveset = [(-1.24, 1.0), 
+                   (-0.718, 0.98), 
+                   (0.615, 1.0), 
+                   (1.2, 1.03), 
+                   (1.55, 0.187), 
+                   (0.73, 0.12), 
+                   (-0.57, 0.76), 
+                   (-1.52, 0.1), 
+                   (0.0, 1.0)] 
         
-        move_graph = {0: [2, 3],
-            1: [1, 8, 7],
-            2: [6, 8, 4],
-            3: [5, 3],
+        move_graph = {
+            0: [1, 7],
+            1: [6, 8, 0],
+            2: [3, 5, 8],
+            3: [4, 2],
             4: [3],
             5: [2],
             6: [1],
-            7: [2, 3],
-            8: [1,2]}
+            7: [0],
+            8: [1, 2]}
         
         potential_moves = move_graph[self.current_pose_key]
         new_pose_index = random.choice(potential_moves)
