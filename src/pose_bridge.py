@@ -10,7 +10,7 @@ class PoseBridge(Node):
     def __init__(self):
         super().__init__('pose_bridge')
         self.auto_update = self.create_timer(0.5, self.update_locations)
-        self.ball_locations = self.create_publisher(BallArray, '/object_locations', 10)
+        self.ball_locations = self.create_publisher(BallArray, '/_object_locations', 10)
 
         # world name parameter
         # self.declare_parameter('world_name', 'pushback')
