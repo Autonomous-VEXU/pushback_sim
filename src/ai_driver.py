@@ -5,11 +5,14 @@ import math
 import numpy as np
 from rclpy.node import Node
 from vex_interfaces.msg import ActionState
+from vex_interfaces.srv import IntakeBall, OutputBall
 from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from nav2_msgs.action import NavigateToPose
 from rclpy.action import ActionClient
 from visualization_msgs.msg import Marker
+
+from field_location import FieldLocation
 
 
 class AIdriver(Node):
@@ -18,12 +21,13 @@ class AIdriver(Node):
         
         self.nav_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.marker_pub = self.create_publisher(Marker, '/ai_goal_marker', 10)
-
-        self.tf_translation = np.array([-1.75, 1.75, 0.2])  # strategy ai origin point in map frame (confirmed w rviz)
-        self.tf_yaw = 4.71239 
         
         self.create_subscription(ActionState, '/sai_output', self.interpret_action, 10)
         self.create_subscription(TwistStamped, '/cmd_vel', self.store_current_velocity, 10)
+
+        # service clients
+        # self.intake_ball = self.create_client(IntakeBall, '/robot_intake')
+        # self.ball_action = self.create_client(OutputBall, '/score_ball')
 
 
     @staticmethod
@@ -45,7 +49,6 @@ class AIdriver(Node):
 
         return q
 
-    
     def store_current_velocity(self, msg: TwistStamped):
         lin_x = msg.twist.linear.x
         lin_y = msg.twist.linear.y
@@ -57,7 +60,13 @@ class AIdriver(Node):
         marker = Marker()
         marker.header.frame_id = 'map'
         marker.header.stamp = self.get_clock().now().to_msg()
-        marker.id = 0 if robot_color == 'red' else 1
+        
+        # Use a unique ID for each marker so they don't overwrite each other
+        if not hasattr(self, '_marker_id_counter'):
+            self._marker_id_counter = 0
+        marker.id = self._marker_id_counter
+        self._marker_id_counter += 1
+        
         marker.type = Marker.SPHERE
         marker.action = Marker.ADD
         marker.pose.position.x = x
@@ -68,8 +77,10 @@ class AIdriver(Node):
         marker.scale.y = 0.2
         marker.scale.z = 0.2
 
-        marker.lifetime.sec = 0
+        # Set lifetime to a very large value (never fade)
+        marker.lifetime.sec = 99999
         marker.lifetime.nanosec = 0
+        
         if robot_color == 'red':
             marker.color.r = 1.0
             marker.color.a = 1.0
@@ -82,21 +93,16 @@ class AIdriver(Node):
     
     def interpret_action(self, msg: ActionState):
         if msg.red_robot_action == 0:
+            self.get_logger().info("driving to coordinate")
 
             self.publish_goal_marker(msg.red_robot.x, msg.red_robot.y, 'red')
             self.publish_goal_marker(msg.blue_robot.x, msg.blue_robot.y, 'blue')
             
-            # i really hate frames
-            norm_x = msg.red_robot.x 
-            norm_y = msg.red_robot.y - 3.5  
-            
-            self.get_logger().info(f"Normalized: x={norm_x}, y={norm_y}")
-            
             goal_pose = PoseStamped()
             goal_pose.header.frame_id = 'map'
             goal_pose.header.stamp = self.get_clock().now().to_msg()
-            goal_pose.pose.position.x = norm_x
-            goal_pose.pose.position.y = norm_y
+            goal_pose.pose.position.x = msg.red_robot.x
+            goal_pose.pose.position.y = msg.red_robot.y
 
             quat = AIdriver.quaternion_from_euler(0, 0, msg.red_robot.theta) 
             goal_pose.pose.orientation.x = quat[0]
@@ -107,7 +113,15 @@ class AIdriver(Node):
             goal_msg = NavigateToPose.Goal()
             goal_msg.pose = goal_pose
             self.nav_client.send_goal_async(goal_msg, feedback_callback=self._feedback_callback)
+        # elif msg.red_robot_action == 1 or msg.red_robot_action == 2:
+        #     # call pickup ball service
+        #     FieldLocation.check_collision()
+            
+        # elif msg.red_robot_action == 3:
+        #     # score ball service at random height
+        #     FieldLocation.scoring_callback(3)
 
+    
 
     def _feedback_callback(self, feedback_msg):
         pass

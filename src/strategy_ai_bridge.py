@@ -5,32 +5,12 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from rclpy.node import Node
 from std_msgs.msg import Int64MultiArray
-from geometry_msgs.msg import PoseArray, Pose2D
+from geometry_msgs.msg import PoseArray, Pose2D, PoseStamped
 from vex_interfaces.msg import WorldState, GoalState, LoaderState, BallArray
 
-'''
-# message to give information to strategy AI model
-std_msgs/Header header
-
-# robot pose information (could be float arrays...)
-geometry_msgs/Pose2D robot_pose
-geometry_msgs/Pose2D opponent_pose
-
-# block locations
-vex_interfaces/BallArray blocks
-std_msgs/Int64MultiArray robot_intake
-
-# loader states
-vex_interfaces/LoaderState loaders # maybe not???
-
-# goal states
-vex_interfaces/GoalState goals
-
-# game score (red, blue)
-std_msgs/Int64MultiArray score
-'''
 
 class StrategyAIBridge(Node):
+    '''subscribing to all required topics and sending a vex_interfaces/WorldState message to the Strategy AI node'''
     def __init__(self):
         super().__init__('sai_bridge')
 
@@ -42,7 +22,7 @@ class StrategyAIBridge(Node):
         self.create_subscription(BallArray, '/field_objects', self.field_objects_cb, 10)
         self.create_subscription(LoaderState, '/loaders', self.loader_cb, 10)
         self.create_subscription(Int64MultiArray, '/blocks_remaining', self.blocks_left_update_callback, 10)
-        self.create_subscription(PoseArray, '/opponent/pose', self.opponent_pose_callback, 10)
+        self.create_subscription(PoseStamped, '/opponent/pose', self.opponent_pose_callback, 10)
 
         # timer for controlling publishing rate
         self.create_timer(1.0, self.update_sai_world_state)
@@ -98,13 +78,15 @@ class StrategyAIBridge(Node):
     def blocks_left_update_callback(self, msg:Int64MultiArray):
         self.world_state.blocks_left = msg
     
-    def opponent_pose_callback(self, msg:PoseArray):
+    def opponent_pose_callback(self, msg:PoseStamped):
         '''get the opponent robot pose'''
 
-        opp_x = msg.poses[-1].position.x
-        opp_y = msg.poses[-1].position.y
+        opp_pose = Pose2D()
 
-        quat = msg.poses[-1].orientation
+        opp_pose.x = msg.pose.position.x
+        opp_pose.y = msg.pose.position.y
+
+        quat = msg.pose.orientation
         quat_array = np.array([quat.x, quat.y, quat.z, quat.w])
 
         # normalize
@@ -117,14 +99,9 @@ class StrategyAIBridge(Node):
         rotation = R.from_quat(quat_normalized)
 
         euler = rotation.as_euler('xyz') # THIS IS IN RADIANS!
-        opp_th = euler[2] # get the yaw (z rotation) value from the returned array
+        opp_pose.theta = euler[2] # get the yaw (z rotation) value from the returned array
 
-        opp_2d_pose = Pose2D()
-        opp_2d_pose.x = opp_x
-        opp_2d_pose.y = opp_y
-        opp_2d_pose.theta = opp_th
-
-        self.world_state.opponent_pose = opp_2d_pose
+        self.world_state.opponent_pose = opp_pose
 
     
     def update_sai_world_state(self): 

@@ -27,6 +27,12 @@ def generate_launch_description():
         cmd=['/home/kymadogg/ros2_ws/src/mqp/.sai_env/bin/python3', '-m', 'sai.sai_node']
     )
 
+    ai_driver_node = Node(
+        package='pushback_sim',
+        executable='ai_driver.py',
+        output='screen'
+    )
+
     # frames be wrong
     sai_map_frame = Node(
         package='tf2_ros',
@@ -37,7 +43,7 @@ def generate_launch_description():
 
     delayed_sai_node = TimerAction( 
         period=delay, 
-        actions=[sai_node]
+        actions=[sai_node, ai_driver_node]
     )
 
     return LaunchDescription([

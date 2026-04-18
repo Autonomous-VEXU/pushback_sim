@@ -6,7 +6,7 @@ import random
 
 from rclpy.node import Node
 from ros_gz_interfaces.srv import SetEntityPose, SpawnEntity
-from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import PoseArray, Pose2D, PoseStamped
 from scipy.spatial.transform import Rotation as R
 
 class Opponent(Node):
@@ -14,7 +14,7 @@ class Opponent(Node):
         super().__init__('opponent')
 
         # subscribe to gazebo topic for opponent pose
-        self.create_subscription(PoseArray, '/opponent/pose', self.get_opponent_pose, 10)
+        self.create_subscription(PoseStamped, '/opponent/pose', self.get_opponent_pose, 10)
 
         # determine if opponent moves every 2s
         self.create_timer(2.0, self.dumb_behavior)
@@ -31,13 +31,13 @@ class Opponent(Node):
         
         self.height = 0.2
 
-    def get_opponent_pose(self, msg:PoseArray):
+    def get_opponent_pose(self, msg:PoseStamped):
         '''get the opponent robot pose'''
 
-        self.opp_x = msg.poses[-1].position.x
-        self.opp_y = msg.poses[-1].position.y
+        self.opp_x = msg.pose.position.x
+        self.opp_y = msg.pose.position.y
 
-        quat = msg.poses[-1].orientation
+        quat = msg.pose.orientation
         quat_array = np.array([quat.x, quat.y, quat.z, quat.w])
 
         # normalize
@@ -52,7 +52,6 @@ class Opponent(Node):
         euler = rotation.as_euler('xyz') # THIS IS IN RADIANS!
         self.opp_th = euler[2] # get the yaw (z rotation) value from the returned array
 
-        
     @staticmethod
     def us_metric(value:float, unit:str):
         '''takes in either ft or meters and outputs the other'''

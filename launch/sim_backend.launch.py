@@ -6,14 +6,6 @@ from launch.conditions import IfCondition
 
 def generate_launch_description():
 
-    # opponent toggle
-    opponent_launch = LaunchConfiguration('opponent')
-    opponent_launch_cmd = DeclareLaunchArgument(
-        'opponent',
-        default_value='false',
-        description='toggles opponent spawning into world + other nodes launching'
-    ) 
-
     # bridge services
     gz_services_bridge = Node(
         package='ros_gz_bridge',
@@ -35,15 +27,6 @@ def generate_launch_description():
         name='otto_bridge',
         arguments=['model/Otto/pose@geometry_msgs/msg/PoseArray@gz.msgs.Pose_V'], 
         remappings=[('/model/Otto/pose', '/otto_pose')]
-    )
-
-    opponent_pose_bridge = Node(
-        package='ros_gz_bridge',
-        executable='parameter_bridge',
-        name='opponent_bridge',
-        arguments=['model/opponent/pose@geometry_msgs/msg/PoseArray@gz.msgs.Pose_V'], 
-        remappings=[('/model/opponent/pose', '/opponent/pose')],
-        condition=IfCondition(opponent_launch)
     )
 
     # pose bridge
@@ -74,22 +57,11 @@ def generate_launch_description():
         output='screen'
     )
 
-    # opponent model node
-    opponent_node = Node(
-        package='pushback_sim',
-        executable='opponent.py',
-        output='screen',
-        condition=IfCondition(opponent_launch)
-    )
-
     return LaunchDescription([
-        opponent_launch_cmd, 
         otto_pose_bridge,
-        opponent_pose_bridge,
         object_poses,
         gz_services_bridge,
         scoring,
-        opponent_node,
         world_services,
         locator
     ])

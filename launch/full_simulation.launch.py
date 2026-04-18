@@ -21,6 +21,14 @@ def generate_launch_description():
         description='toggles using the keepout filter for the goals' 
     ) 
 
+    # opponent toggle
+    opponent_launch = LaunchConfiguration('opponent')
+    opponent_launch_cmd = DeclareLaunchArgument(
+        'opponent',
+        default_value='false',
+        description='toggles opponent spawning into world + other nodes launching'
+    ) 
+
     # strategy AI bridge launch arg
     teleop_toggle = LaunchConfiguration('teleop')
     teleop_toggle_cmd = DeclareLaunchArgument(
@@ -80,11 +88,18 @@ def generate_launch_description():
         condition=IfCondition(nav2_toggle)
     )
 
-    # remove soon
+    # remove soon (move to nav2 launch in otto navigation)
     costmap_filter = IncludeLaunchDescription(  
         PythonLaunchDescriptionSource(os.path.join(otto_gz, 'launch', 'keepout_filter.launch.py')),
         launch_arguments={'use_sim_time': 'true'}.items(),
         condition=IfCondition(keepout_filter)
+    )
+
+    # opponent launch file
+    opp_nodes = IncludeLaunchDescription(  
+        PythonLaunchDescriptionSource(os.path.join(this_dir, 'launch', 'opponent.launch.py')),
+        launch_arguments={'use_sim_time': 'true'}.items(),
+        condition=IfCondition(opponent_launch)
     )
 
     # launch file for the strategy AI model
@@ -94,6 +109,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        opponent_launch_cmd,
         keepout_filter_cmd,  # remove soon
         teleop_toggle_cmd,
         sai_toggle_cmd,
@@ -103,6 +119,7 @@ def generate_launch_description():
         nav2_launch,
         costmap_filter, # remove soon
         otto,
+        opp_nodes,
         teleop,
         sim_backend,
         sai_launch

@@ -249,8 +249,6 @@ class FieldLocation(Node):
         # publish the loader message
         self.loaders.publish(loader_state)
 
-        # publish the blocks that are not in goals or in the loaders
-        num_blocks = len(self.field_blocks.object_array)
         # self.get_logger().info(f'number of blocks on the {num_blocks}')
         self.field_objects.publish(self.field_blocks)
             
