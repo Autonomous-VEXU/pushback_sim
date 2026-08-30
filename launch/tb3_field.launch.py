@@ -35,11 +35,24 @@ def generate_launch_description():
     ])
 
     # actually run gazebo
-    gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('ros_gz_sim'), 'launch'), '/gz_sim.launch.py']),
-        launch_arguments = [
-            ('gz_args', [LaunchConfiguration('world'),'.sdf',' -v 4',' -r'])
+    ros_gz_sim = get_package_share_directory('ros_gz_sim')
+    ros_gz_sim_src = PythonLaunchDescriptionSource(
+        os.path.join(ros_gz_sim, 'launch', 'gz_sim.launch.py')
+    )
+
+    gzserver_cmd = IncludeLaunchDescription(
+        ros_gz_sim_src,
+        launch_arguments=[
+            ('gz_args', [LaunchConfiguration('world'), '.sdf -v 4 -r -s']),
+            ('on_exit_shutdown', 'true')
+        ]
+    )
+
+    gzclient_cmd = IncludeLaunchDescription(
+        ros_gz_sim_src,
+        launch_arguments=[
+            ('gz_args', ['-v 4 -g']),
+            ('on_exit_shutdown', 'true')
         ]
     )
 
@@ -48,7 +61,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('turtlebot3_gazebo'), 'launch'), '/spawn_turtlebot3.launch.py']),
         launch_arguments = [
-            ('x_pose',LaunchConfiguration('x_pose')),
+            ('x_pose', LaunchConfiguration('x_pose')),
             ('y_pose', LaunchConfiguration('y_pose')),
             ('z_pose', LaunchConfiguration('z_pose'))
         ]
@@ -58,6 +71,7 @@ def generate_launch_description():
     return LaunchDescription([
         gz_sim_resource,
         arguments,
-        gazebo,
+        gzserver_cmd,
+        gzclient_cmd,
         turtlebot,
     ])
