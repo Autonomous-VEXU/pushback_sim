@@ -12,7 +12,6 @@ def generate_launch_description():
     this_dir = get_package_share_directory('pushback_sim')
     otto_gz = get_package_share_directory('otto_gazebo')
     otto_br = get_package_share_directory('otto_bringup')
-    otto_nav = get_package_share_directory('otto_navigation')
 
     keepout_filter = LaunchConfiguration('keepout_filter') # put in nav2 launch file soon
     keepout_filter_cmd = DeclareLaunchArgument(
